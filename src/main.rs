@@ -7,7 +7,7 @@ mod midi;
 // use dependencies     
 use iced::{Theme, Element, Subscription};
 use rodio::{self, Source};
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
 use midly::TrackEvent;
@@ -97,13 +97,12 @@ impl RealNote {
 
     fn play_sound(&self, bpm: f32) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
-        let frequency: f32 = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
-        // println!("Playing: {}hz | Time: {}s", frequency, time);
-        let (_stream, device) = rodio::OutputStream::try_default()
-            .expect("Failed to get output device");
+        let frequency: f32 = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);       
         let source = rodio::source::SineWave::new(frequency)
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
+        let (_stream, device) = rodio::OutputStream::try_default()
+        .expect("Failed to get output device");
         let sink = rodio::Sink::try_new(&device)
             .expect("Failed to create sink with device");
         sink.append(source);
@@ -173,12 +172,18 @@ impl Song {
 fn async_play_note(notes: &Vec<RealNote>, bpm: f32) {
     let length = notes.len().min(num_cpus::get());
     let pool = ThreadPool::new(length);
-    for note in notes.clone() { 
+    let notes = Arc::new(notes.clone());
+
+    for _ in 0..notes.len() {
+        let notes = Arc::clone(&notes);
         pool.execute(move || {
-            note.play_sound(bpm);
+            for note in notes.iter() {
+                note.play_sound(bpm);
+            }
         });
     }
 }
+
 
 // Message enum, which is used to communicate changes to the GUI
 #[derive(Debug, Clone)]
