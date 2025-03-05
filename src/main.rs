@@ -169,18 +169,25 @@ impl Song {
 
 // async_play_note function, which can be used at any point in the program 
 // asynchronously plays notes   
-fn async_play_note(notes: &Vec<RealNote>, bpm: f32) {
-    let length = notes.len().min(num_cpus::get());
-    let pool = ThreadPool::new(length);
-    let notes = Arc::new(notes.clone());
+// fn async_play_note(notes: &Vec<RealNote>, bpm: f32) {
+//     let length = notes.len().min(num_cpus::get());
+//     let pool = ThreadPool::new(length);
+//     let notes = Arc::new(notes.clone());
 
-    for _ in 0..notes.len() {
-        let notes = Arc::clone(&notes);
-        pool.execute(move || {
-            for note in notes.iter() {
-                note.play_sound(bpm);
-            }
-        });
+//     for _ in 0..notes.len() {
+//         let notes = Arc::clone(&notes);
+//         pool.execute(move || {
+//             for note in notes.iter() {
+//                 note.play_sound(bpm);
+//             }
+//         });
+//     }
+// }
+fn async_play_note(notes: &[RealNote], bpm: f32) {
+    let pool = ThreadPool::new(num_cpus::get());
+    for note in notes {
+        let note = note.clone();
+        pool.execute(move || note.play_sound(bpm));
     }
 }
 
