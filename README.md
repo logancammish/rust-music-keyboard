@@ -7,6 +7,17 @@ Simple musical keyboard made in Rust
 
 If you want more up-to-date but unstable functionality, compile the preproduction branch.
 
+| Feature                     | Availablity  |
+|-----------------------------|----------------------------------------------------------------------------------------------|
+| **MIDI integration and recording**        | 👷  |
+| **Play all notes in western music**       | ✔️ |
+| **Play multiple notes asynchronously**       | ❌ |
+| **Adjust BPM/Octave**       | ✔️ |
+| **Determine major scales of a note**       | ✔️ |
+| **Play ascending 1st/3rd/5th triad appregios**       | ✔️ |
+| **Highlight keys according to a selected major scale**       | ❌ |
+
+
 ### Building/Downloading
 
 This application officially supports Windows and Linux. 
