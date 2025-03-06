@@ -35,11 +35,14 @@ impl Program {
             ).spacing(2),
 
             widget::row!(
-                checkbox("Play triads", self.play_chords)
-                    .on_toggle(|_| Message::PlayChords),
+                checkbox("Play triad ascending appregios", self.play_chords)
+                    .on_toggle(|_| Message::PlayChords)
+                    .spacing(2),
+                
                 checkbox("Play aynchronously", self.play_async)
-                    .on_toggle(|_| Message::PlayAsync),
-            ),
+                    .on_toggle(|_| Message::PlayAsync)
+                    .spacing(2),
+            ).spacing(5),
 
             widget::row!(
                 //C NOTE BEGIN

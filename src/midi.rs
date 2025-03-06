@@ -2,7 +2,7 @@ use midly::{Format, Header, MetaMessage, MidiMessage, Smf, Timing, Track, TrackE
 use midly::num::{u28, u24, u7, u4};
 use std::fs::File;
 use std::io::Write;
-use crate::Note;
+use crate::{Note, Song};
 
 pub struct Midi {} 
 
@@ -28,10 +28,10 @@ impl Midi {
         u7::new(midi_note as u8)
     }
 
-    // THIS FUNCTION IS A PLACEHOLDER
-    //
-    // NOT FOR PRODUCTION
-    pub fn midi_file_create() {
+    // Remember song: Some(Note) / Octave / Time played at
+    fn midi_file_create(song: Song) {
+        todo!("NOT FOR PRODUCTION USE:  Private, Change to pub");
+
         let header = Header::new(
             Format::SingleTrack,
             Timing::Metrical(480.into()) 

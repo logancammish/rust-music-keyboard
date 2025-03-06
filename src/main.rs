@@ -6,8 +6,9 @@ mod midi;
 
 // use dependencies     
 use iced::{Theme, Element, Subscription};
-use rodio::{self, Source};
-use std::{collections::HashMap, time::Duration};
+use once_cell::sync::Lazy;
+use rodio::{self, OutputStream, Sink, Source};
+use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
 use midly::TrackEvent;
@@ -18,6 +19,10 @@ trait Playable {
     fn play(&self, bpm: f32);
 }
 
+
+static AUDIO_SINK: Lazy<Mutex<Option<Sink>>> = Lazy::new(|| Mutex::new(None));
+
+
 // Note enum defines all notes in Western music
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
 enum Note { 
@@ -27,7 +32,7 @@ enum Note {
 // NoteLength enum defines the length of a note
 // to be calculated according to beats per minute
 #[derive(Debug, Clone)]
-enum NoteLength { 
+enum NoteLength {  
     Whole, Half, Quarter, Eighth, Sixteenth
 }
 
@@ -97,17 +102,20 @@ impl RealNote {
 
     fn play_sound(&self, bpm: f32) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
-        let frequency: f32 = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
-        // println!("Playing: {}hz | Time: {}s", frequency, time);
-        let (_stream, device) = rodio::OutputStream::try_default()
-            .expect("Failed to get output device");
+        let frequency = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
+        
         let source = rodio::source::SineWave::new(frequency)
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
-        let sink = rodio::Sink::try_new(&device)
-            .expect("Failed to create sink with device");
-        sink.append(source);
-        sink.sleep_until_end();
+        
+        let mut sink_guard = AUDIO_SINK.lock().unwrap();
+        if let Some(sink) = &mut *sink_guard {
+            sink.append(source);
+            //sink.play();
+            sink.sleep_until_end();
+        } else {
+            println!("Error: AUDIO_SINK not initialized");
+        }
     }
 
     fn play_async(&self, bpm: f32) { 
@@ -158,7 +166,7 @@ impl Playable for Chord {
 }
 
 struct Song { 
-    notes: HashMap<Note, f32, f32>,  // Note / Octave / Time played at
+    notes: HashMap<Option<Note>, (f32, f32)>,  // Note / Octave / Time played at
     bpm: f32 
 }
 
@@ -168,15 +176,22 @@ impl Song {
     }
 }
 
-// async_play_note function, which can be used at any point in the program 
-// asynchronously plays notes   
-fn async_play_note(notes: &Vec<RealNote>, bpm: f32) {
-    let length = notes.len().min(num_cpus::get());
-    let pool = ThreadPool::new(length);
-    for note in notes.clone() { 
-        pool.execute(move || {
-            note.play_sound(bpm);
-        });
+impl Default for Song { 
+    fn default() -> Self {
+        let mut notes =  HashMap::new();
+        notes.insert(None, (0.0_f32, 0.0_f32));
+        Self {
+            bpm: 120.0,
+            notes: notes
+        }
+    }
+}
+
+fn async_play_note(notes: &[RealNote], bpm: f32) {
+    let pool = ThreadPool::new(num_cpus::get());
+    for note in notes {
+        let note = note.clone();
+        pool.execute(move || note.play_sound(bpm));
     }
 }
 
@@ -295,7 +310,12 @@ impl Default for Program {
 
 // main function
 pub fn main() -> iced::Result {
-    midi::Midi::midi_file_create(); 
+    let (stream, handle) = OutputStream::try_default().unwrap();
+    let sink = Sink::try_new(&handle).unwrap();
+    *AUDIO_SINK.lock().unwrap() = Some(sink);
+    std::mem::forget(stream);
+    
+   // midi::Midi::midi_file_create(Song::default()); 
 
     iced::application("namne", Program::update, Program::view) 
         .subscription(Program::subscription)
