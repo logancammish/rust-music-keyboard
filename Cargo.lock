@@ -3197,6 +3197,7 @@ dependencies = [
  "image",
  "midly",
  "num_cpus",
+ "once_cell",
  "palette",
  "rodio",
  "threadpool",
