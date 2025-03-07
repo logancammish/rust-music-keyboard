@@ -13,6 +13,7 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 | **Play all notes in western music**       | ✔️ |
 | **Play multiple notes asynchronously**       | ❌ |
 | **Adjust BPM/Octave**       | ✔️ |
+| **Adjust note duration**       | ❌ |
 | **Determine major scales of a note**       | ✔️ |
 | **Play ascending 1st/3rd/5th triad appregios**       | ✔️ |
 | **Highlight keys according to a selected major scale**       | ❌ |
