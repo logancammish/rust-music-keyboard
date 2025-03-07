@@ -28,10 +28,11 @@ impl Midi {
         u7::new(midi_note as u8)
     }
 
-    // Remember song: Some(Note) / Octave / Time played at
-    fn midi_file_create(song: Song) {
-        todo!("NOT FOR PRODUCTION USE:  Private, Change to pub");
-
+    pub fn bpm_to_microseconds_per_beat(bpm: f32) -> u24 {   
+        u24::from((60_000_000.0 / bpm) as u32)
+    }
+    
+    pub fn midi_file_create(song: Song) {
         let header = Header::new(
             Format::SingleTrack,
             Timing::Metrical(480.into()) 
@@ -39,44 +40,44 @@ impl Midi {
         let mut smf = Smf::new(header);
 
         let mut track: Vec<TrackEvent<'_>> = Track::new();
-        // Set the tempo (500,000 microseconds per beat = 120 BPM)
-        let tempo = MetaMessage::Tempo(u24::from(500_000));
+        let tempo = MetaMessage::Tempo(Self::bpm_to_microseconds_per_beat(song.bpm));
         track.push(TrackEvent {
             delta: u28::new(0),
             kind: midly::TrackEventKind::Meta(tempo),
         });
 
-        let note_on = MidiMessage::NoteOn {
-            key: u7::new(60),  // Middle C
-            vel: u7::new(64)   // Velocity
-        };
-        let note_off = MidiMessage::NoteOff {
-            key: u7::new(60),
-            vel: u7::new(64)
-        };
-
-        track.push(TrackEvent {
-            delta: u28::new(0),
-            kind: midly::TrackEventKind::Midi {
-                channel: u4::new(0),
-                message: note_on
-            },
-        });
-
-        track.push(TrackEvent {
-            delta: u28::new(48),
-            kind: midly::TrackEventKind::Midi {
-                channel: u4::new(0),
-                message: note_off
-            },
-        });
+        for (k, i) in song.notes {
+            let current_note = k.unwrap();
+            let note_on = MidiMessage::NoteOn {
+                key: Self::note_to_midi(current_note.clone(), i.0),  
+                vel: u7::new(64)   
+            };
+            let note_off = MidiMessage::NoteOff {
+                key: Self::note_to_midi(current_note.clone(), i.0),  
+                vel: u7::new(64)
+            };
+    
+            track.push(TrackEvent {
+                delta: u28::new(0),
+                kind: midly::TrackEventKind::Midi {
+                    channel: u4::new(0),
+                    message: note_on
+                },
+            });
+    
+            track.push(TrackEvent {
+                delta: u28::new(48),
+                kind: midly::TrackEventKind::Midi {
+                    channel: u4::new(0),
+                    message: note_off
+                },
+            });
+        }
 
         smf.tracks.push(track);
 
         let mut buffer = Vec::new();
         smf.write(&mut buffer).expect("Failed to write to buffer");
-
-        // Write buffer to file
         File::create("output.mid")
             .expect("Failed to create file")
             .write_all(&buffer)

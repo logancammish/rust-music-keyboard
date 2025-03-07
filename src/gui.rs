@@ -132,7 +132,7 @@ impl Program {
                         .width(Length::Fixed(85.0))
                         .height(Length::Fixed(255.0))
                         .padding(5),
-                ).spacing(2),
+                ).spacing(2).padding(5),
             
                 widget::row!(
                     Space::with_width(59.5),
@@ -190,9 +190,17 @@ impl Program {
                         .width(Length::Fixed(63.75))
                         .height(Length::Fixed(132.6))
                         .padding(5),
-                ).spacing(0)
+                ).spacing(0),
             ),
-        ].spacing(20))
-        .padding(10)
+
+            Space::with_height(50), // Add vertical space
+
+            widget::column![
+                widget::row!(
+                    button(text("Start recording")).on_press(Message::StartRecording), 
+                    button(text("Stop recording")).on_press(Message::StopRecording)
+                ).spacing(10) // Add spacing between buttons
+            ].spacing(20)
+        ]).into() // Add missing closing delimiters
     }
 }

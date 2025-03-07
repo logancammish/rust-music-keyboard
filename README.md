@@ -11,7 +11,7 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 
 | Feature                     | Availablity  |
 |-----------------------------|----------------------------------------------------------------------------------------------|
-| **MIDI integration and recording**        | ⏳  |
+| **MIDI integration and recording**        | ✔️  |
 | **Play all notes in western music**       | ✔️ |
 | **Clear and concise keyboard GUI**       | ✔️ |
 | **Play multiple notes asynchronously**       | ⏳* |
