@@ -108,14 +108,19 @@ impl RealNote {
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
         
-        let mut sink_guard = AUDIO_SINK.lock().unwrap();
-        if let Some(sink) = &mut *sink_guard {
-            sink.append(source);
-            //sink.play();
-            sink.sleep_until_end();
+        if let Ok(mut sink_guard) = AUDIO_SINK.lock() {
+            if let Some(sink) = sink_guard.as_mut() {
+                sink.append(source);
+                // sink.play(); 
+                sink.sleep_until_end();
+            } else {
+                eprintln!("Error: AUDIO_SINK not initialized");
+            }
         } else {
-            println!("Error: AUDIO_SINK not initialized");
+            eprintln!("Error: Failed to acquire AUDIO_SINK lock");
+            return;
         }
+            
     }
 
     fn play_async(&self, bpm: f32) { 
@@ -310,9 +315,9 @@ impl Default for Program {
 
 // main function
 pub fn main() -> iced::Result {
-    let (stream, handle) = OutputStream::try_default().unwrap();
-    let sink = Sink::try_new(&handle).unwrap();
-    *AUDIO_SINK.lock().unwrap() = Some(sink);
+    let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
+    let sink = Sink::try_new(&handle).expect("Failed to create sink");
+    *AUDIO_SINK.lock().expect("Failed to get AUDIO_SINK") = Some(sink);
     std::mem::forget(stream);
     
    // midi::Midi::midi_file_create(Song::default()); 
