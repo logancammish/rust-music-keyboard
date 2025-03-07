@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 // use other files inside this project
 mod gui;
 mod chord;
@@ -16,12 +16,15 @@ use midly::TrackEvent;
 // playable trait to implement polymorphism
 // for structs RealNote and Chord
 trait Playable {
-    fn play(&self, bpm: f32);
+    fn play(&self, bpm: f32, is_recording: bool);
 }
 
 
 static AUDIO_SINK: Lazy<Mutex<Option<Sink>>> = Lazy::new(|| Mutex::new(None));
 
+static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32)>>>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(HashMap::new()))
+});
 
 // Note enum defines all notes in Western music
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
@@ -100,13 +103,21 @@ impl RealNote {
         }
     }
 
-    fn play_sound(&self, bpm: f32) {  
+    fn play_sound(&self, bpm: f32, is_recording: bool) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
         let frequency = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
         
         let source = rodio::source::SineWave::new(frequency)
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
+
+        if is_recording {
+            let mut recorded_notes = RECORDED_NOTES.lock().unwrap();
+            recorded_notes.entry(self.note.clone())
+                .or_insert_with(Vec::new)
+                .push((self.octave, time));
+        }
+
         
         if let Ok(mut sink_guard) = AUDIO_SINK.lock() {
             if let Some(sink) = sink_guard.as_mut() {
@@ -123,16 +134,16 @@ impl RealNote {
             
     }
 
-    fn play_async(&self, bpm: f32) { 
+    fn play_async(&self, bpm: f32, is_recording: bool) { 
         let notes = vec![self.clone()];
-        async_play_note(&notes, bpm);
+        async_play_note(&notes, bpm, is_recording);
     }
 }
 
 // implement Playable trait for RealNote 
 impl Playable for RealNote { 
-    fn play(&self, bpm: f32) {
-        self.play_sound(bpm);
+    fn play(&self, bpm: f32, is_recording: bool) {
+        self.play_sound(bpm, is_recording);
     }
 }
 
@@ -165,11 +176,12 @@ impl Chord {
 
 // implement Playable trait for Chord
 impl Playable for Chord { 
-    fn play(&self, bpm: f32) {
-        async_play_note(&self.notes, bpm);
+    fn play(&self, bpm: f32, is_recording: bool) {
+        async_play_note(&self.notes, bpm, is_recording);
     }
 }
 
+#[derive(Debug, Clone)]
 struct Song { 
     notes: HashMap<Option<Note>, (f32, f32)>,  // Note / Octave / Time played at
     bpm: f32 
@@ -192,11 +204,11 @@ impl Default for Song {
     }
 }
 
-fn async_play_note(notes: &[RealNote], bpm: f32) {
+fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
     let pool = ThreadPool::new(num_cpus::get());
     for note in notes {
         let note = note.clone();
-        pool.execute(move || note.play_sound(bpm));
+        pool.execute(move || note.play_sound(bpm, is_recording));
     }
 }
 
@@ -208,7 +220,9 @@ enum Message {
     CustomBpmChange(String),
     Play(Note),
     PlayChords,
-    PlayAsync
+    PlayAsync,
+    StartRecording, 
+    StopRecording
 }
 
 // Program struct, which stores the current information the program may need
@@ -223,7 +237,8 @@ struct Program {
     bpm: f32,
     custom_bpm: String,
     play_chords: bool,
-    play_async: bool
+    play_async: bool,
+    is_recording: bool
 } 
 
 // implement the Program struct
@@ -233,6 +248,29 @@ struct Program {
 // 3. update        -> update Program
 // 4. subscription  -> sets the iced subscription
 impl Program { 
+    pub fn start_recording(&mut self) {
+        self.is_recording = true;
+        RECORDED_NOTES.lock().unwrap().clear();  
+    }
+    
+    pub fn stop_recording(&mut self) -> Song {
+        self.is_recording = false;
+        let recorded_notes = RECORDED_NOTES.lock().unwrap().clone();
+    
+        let mut song = Song {
+            notes: HashMap::new(),
+            bpm: self.bpm,
+        };
+    
+        for (note, data) in recorded_notes {
+            for (octave, time) in data {
+                song.notes.insert(Some(note.clone()), (octave, time));
+            }
+        }
+        println!("{:?}", song);
+        song
+    }
+    
     pub fn update_bpm(&mut self, value: f32) {
         if NoteLength::check_bpm(value) {
             self.bpm = value;
@@ -249,6 +287,17 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::StartRecording => {
+                self.start_recording();
+                self.is_recording = true;
+            },
+            Message::StopRecording => {
+                let song = self.stop_recording();
+                println!("{:?}", song);
+                midi::Midi::midi_file_create(song);
+                self.is_recording = false;
+            },
+           
             Message::PlayChords => {
                 self.play_chords = !self.play_chords;
             }
@@ -276,20 +325,20 @@ impl Program {
                     RealNote::play(&RealNote{
                         note: note, 
                         length: NoteLength::Whole,
-                        octave: self.octave
-                    }, self.bpm);
+                        octave: self.octave                    
+                    }, self.bpm, self.is_recording);
                 } else if self.play_chords == true { 
                     Chord::play(&Chord::triad_from_note(&RealNote {
                         note: note, 
                         length: NoteLength::Whole,
                         octave: self.octave
-                    }), self.bpm);
+                    }), self.bpm, self.is_recording);
                 } else if self.play_async == true {               
                     RealNote::play_async(&RealNote{ 
                         note: note, 
                         length: NoteLength::Whole,
                         octave: self.octave
-                    }, self.bpm);
+                    }, self.bpm, self.is_recording);
                 }
             }
         }
@@ -308,7 +357,8 @@ impl Default for Program {
             bpm: 120.0,
             custom_bpm: "120".to_string(),
             play_chords: false,
-            play_async: false
+            play_async: false,
+            is_recording: false
         }
     }
 }
@@ -322,7 +372,7 @@ pub fn main() -> iced::Result {
     
    // midi::Midi::midi_file_create(Song::default()); 
 
-    iced::application("namne", Program::update, Program::view) 
+    iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
         .run()
