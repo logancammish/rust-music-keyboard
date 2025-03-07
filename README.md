@@ -13,8 +13,7 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 |-----------------------------|----------------------------------------------------------------------------------------------|
 | **MIDI integration and recording**        | ⏳  |
 | **Play all notes in western music**       | ✔️ |
-| **Clear and concise keyboard GUI**       | ✔️ |
-| **Play multiple notes asynchronously**       | ⏳* |
+| **Play multiple notes asynchronously**       | ❌ |
 | **Adjust BPM/Octave**       | ✔️ |
 | **Adjust note duration**       | ❌ |
 | **Determine major scales of a note**       | ✔️ |
