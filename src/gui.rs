@@ -1,15 +1,16 @@
-// use dependencies
-use iced::{widget, Length};
-use iced::widget::{button, checkbox, container, slider, text, text_input, Container};
-
-// use other files inside this project
+use iced::{widget::{self, button, checkbox, container, slider, text, text_input, Space}, Background, Color, Length, Theme, alignment, font::Weight, Font}; // Add Font
 use crate::{Message, Note, Program};
 
-// impliment for Program
-// functions: 
-// 1. get_ui_information  -> returns the UI info needed for the program
-impl Program { 
-    pub fn get_ui_information(&self) -> Container<'static, Message> {
+fn button_style(_theme: &Theme, _status: button::Status, note_color: Color) -> button::Style {
+    button::Style {
+        background: Some(iced::Background::Color(note_color)),
+        text_color: if note_color == Color::BLACK { Color::WHITE } else { Color::BLACK },
+        ..button::Style::default()
+    }
+}
+
+impl Program {
+    pub fn get_ui_information(&self) -> iced::widget::Container<'static, Message> {
         container(widget::column![
             widget::row!(
                 text("Octave"),
@@ -18,7 +19,7 @@ impl Program {
                     self.octave,
                     Message::OctaveChange
                 ),
-            ).spacing(2),
+            ).spacing(10),
 
             widget::row!(
                 text("BPM"),
@@ -29,94 +30,167 @@ impl Program {
                 ),  
                 
                 text_input(format!("{}", &self.bpm).as_str(), &self.custom_bpm)
-                .on_input(Message::CustomBpmChange) 
-                .padding(2)
-                .width(Length::Fixed(50.0)),
-            ).spacing(2),
+                    .on_input(Message::CustomBpmChange) 
+                    .padding(2)
+                    .width(Length::Fixed(50.0)),
+            ).spacing(10),
+
+            // widget::row!(
+            //     text("Note length"),
+            //     slider(
+            //         0.0..=1.0,
+            //         self.Note, 
+            //         Message::NoteLengthChange
+            //     ),  
+                
+            //     text_input(format!("{}", &self.bpm).as_str(), &self.custom_bpm)
+            //         .on_input(Message::CustomBpmChange) 
+            //         .padding(2)
+            //         .width(Length::Fixed(50.0)),
+            // ).spacing(10),
 
             widget::row!(
                 checkbox("Play triad ascending appregios", self.play_chords)
                     .on_toggle(|_| Message::PlayChords)
-                    .spacing(2),
+                    .spacing(10),
                 
-                checkbox("Play aynchronously", self.play_async)
+                checkbox("Play asynchronously", self.play_async)
                     .on_toggle(|_| Message::PlayAsync)
-                    .spacing(2),
-            ).spacing(5),
+                    .spacing(10),
+            ).spacing(20),
 
-            widget::row!(
-                //C NOTE BEGIN
-                //FLATS ARE INDICATED BY 50
-
-                button("")
-                    .on_press(Message::Play(Note::C))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),  
-                button("")
-                    .on_press(Message::Play(Note::Csharp))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(50.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::D))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10), 
-                button("")
-                    .on_press(Message::Play(Note::Dsharp))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(50.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::E))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),         
-                button("")
-                    .on_press(Message::Play(Note::F))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::Fsharp))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(50.0))  
-                    .padding(10),  
-                button("")
-                    .on_press(Message::Play(Note::G))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::Gsharp))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(50.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::A))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),     
-                button("")
-                    .on_press(Message::Play(Note::Asharp))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(50.0))  
-                    .padding(10),      
-                button("")
-                    .on_press(Message::Play(Note::B))
-                    .width(Length::Fixed(50.0)) 
-                    .height(Length::Fixed(150.0))  
-                    .padding(10),        
-            ).spacing(3),
-
-            widget::row!(
-                text(format!("Octave: {}", &self.octave))
-                .size(72)
-                .wrapping(text::Wrapping::Glyph),
-            )
-
-        ].spacing(10))
+            widget::stack!(
+                widget::row!(
+                    button(text(format!("C{}", self.octave))
+                        .size(24) // slightly larger text
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                    ).on_press(Message::Play(Note::C))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0)) // 50.0 * 1.7
+                        .height(Length::Fixed(255.0)) // 150.0 * 1.7
+                        .padding(5),
+                    button(text(format!("D{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::D))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                    button(text(format!("E{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::E))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                    button(text(format!("F{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::F))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                    button(text(format!("G{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::G))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                    button(text(format!("A{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::A))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                    button(text(format!("B{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::B))
+                        .style(|theme, status| button_style(theme, status, Color::WHITE))
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
+                        .padding(5),
+                ).spacing(2),
+            
+                widget::row!(
+                    Space::with_width(59.5), // 35.0 * 1.7
+                    button(text(format!("C#{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::Csharp))
+                        .style(|theme, status| button_style(theme, status, Color::BLACK))
+                        .width(Length::Fixed(63.75)) // 37.5 * 1.7
+                        .height(Length::Fixed(132.6)) // 78.0 * 1.7
+                        .padding(5),
+                    Space::with_width(34.0), // 20.0 * 1.7
+                    button(text(format!("D#{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::Dsharp))
+                        .style(|theme, status| button_style(theme, status, Color::BLACK))
+                        .width(Length::Fixed(63.75))
+                        .height(Length::Fixed(132.6))
+                        .padding(5),
+                    Space::with_width(93.5), // 55.0 * 1.7
+                    button(text(format!("F#{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::Fsharp))
+                        .style(|theme, status| button_style(theme, status, Color::BLACK))
+                        .width(Length::Fixed(63.75))
+                        .height(Length::Fixed(132.6))
+                        .padding(5),
+                    Space::with_width(34.0),
+                    button(text(format!("G#{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::Gsharp))
+                        .style(|theme, status| button_style(theme, status, Color::BLACK))
+                        .width(Length::Fixed(63.75))
+                        .height(Length::Fixed(132.6))
+                        .padding(5),
+                    Space::with_width(34.0),
+                    button(text(format!("A#{}", self.octave))
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center) // Center alignment
+                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
+                    ).on_press(Message::Play(Note::Asharp))
+                        .style(|theme, status| button_style(theme, status, Color::BLACK))
+                        .width(Length::Fixed(63.75))
+                        .height(Length::Fixed(132.6))
+                        .padding(5),
+                ).spacing(0)
+            ),
+        ].spacing(20))
         .padding(10)
     }
 }
