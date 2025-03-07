@@ -20,8 +20,6 @@ trait Playable {
 }
 
 
-static AUDIO_SINK: Lazy<Mutex<Option<Sink>>> = Lazy::new(|| Mutex::new(None));
-
 static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32)>>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(HashMap::new()))
 });
@@ -118,20 +116,11 @@ impl RealNote {
                 .push((self.octave, time));
         }
 
-        
-        if let Ok(mut sink_guard) = AUDIO_SINK.lock() {
-            if let Some(sink) = sink_guard.as_mut() {
-                sink.append(source);
-                // sink.play(); 
-                sink.sleep_until_end();
-            } else {
-                eprintln!("Error: AUDIO_SINK not initialized");
-            }
-        } else {
-            eprintln!("Error: Failed to acquire AUDIO_SINK lock");
-            return;
-        }
-            
+        let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
+        let sink = Sink::try_new(&handle).expect("Failed to create sink");
+        sink.append(source);
+        sink.play(); 
+        sink.sleep_until_end();
     }
 
     fn play_async(&self, bpm: f32, is_recording: bool) { 
@@ -363,13 +352,8 @@ impl Default for Program {
 
 // main function
 pub fn main() -> iced::Result {
-    let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-    let sink = Sink::try_new(&handle).expect("Failed to create sink");
-    *AUDIO_SINK.lock().expect("Failed to get AUDIO_SINK") = Some(sink);
-    std::mem::forget(stream);
-    
     iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
         .run()
-} 
+}
