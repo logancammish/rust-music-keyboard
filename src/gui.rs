@@ -62,18 +62,19 @@ impl Program {
             widget::stack!(
                 widget::row!(
                     button(text(format!("C{}", self.octave))
-                        .size(24) // slightly larger text
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .size(24)
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
+                        .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::C))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
-                        .width(Length::Fixed(85.0)) // 50.0 * 1.7
-                        .height(Length::Fixed(255.0)) // 150.0 * 1.7
+                        .width(Length::Fixed(85.0))
+                        .height(Length::Fixed(255.0))
                         .padding(5),
                     button(text(format!("D{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::D))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -82,8 +83,8 @@ impl Program {
                         .padding(5),
                     button(text(format!("E{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::E))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -92,8 +93,8 @@ impl Program {
                         .padding(5),
                     button(text(format!("F{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::F))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -102,8 +103,8 @@ impl Program {
                         .padding(5),
                     button(text(format!("G{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::G))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -112,8 +113,8 @@ impl Program {
                         .padding(5),
                     button(text(format!("A{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::A))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -122,8 +123,8 @@ impl Program {
                         .padding(5),
                     button(text(format!("B{}", self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::B))
                         .style(|theme, status| button_style(theme, status, Color::WHITE))
@@ -133,33 +134,33 @@ impl Program {
                 ).spacing(2),
             
                 widget::row!(
-                    Space::with_width(59.5), // 35.0 * 1.7
-                    button(text(format!("C#{}", self.octave))
+                    Space::with_width(59.5),
+                    button(text(format!("Db{}\nC#{}", self.octave, self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::Csharp))
                         .style(|theme, status| button_style(theme, status, Color::BLACK))
-                        .width(Length::Fixed(63.75)) // 37.5 * 1.7
-                        .height(Length::Fixed(132.6)) // 78.0 * 1.7
+                        .width(Length::Fixed(63.75))
+                        .height(Length::Fixed(132.6))
                         .padding(5),
-                    Space::with_width(34.0), // 20.0 * 1.7
-                    button(text(format!("D#{}", self.octave))
+                    Space::with_width(34.0),
+                    button(text(format!("Eb{}\nD#{}",  self.octave, self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::Dsharp))
                         .style(|theme, status| button_style(theme, status, Color::BLACK))
                         .width(Length::Fixed(63.75))
                         .height(Length::Fixed(132.6))
                         .padding(5),
-                    Space::with_width(93.5), // 55.0 * 1.7
-                    button(text(format!("F#{}", self.octave))
+                    Space::with_width(93.5),
+                    button(text(format!("Gb{}\nF#{}", self.octave, self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::Fsharp))
                         .style(|theme, status| button_style(theme, status, Color::BLACK))
@@ -167,10 +168,10 @@ impl Program {
                         .height(Length::Fixed(132.6))
                         .padding(5),
                     Space::with_width(34.0),
-                    button(text(format!("G#{}", self.octave))
+                    button(text(format!("Ab{}\nG#{}", self.octave, self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::Gsharp))
                         .style(|theme, status| button_style(theme, status, Color::BLACK))
@@ -178,10 +179,10 @@ impl Program {
                         .height(Length::Fixed(132.6))
                         .padding(5),
                     Space::with_width(34.0),
-                    button(text(format!("A#{}", self.octave))
+                    button(text(format!("Bb{}\nA#{}", self.octave, self.octave))
                         .size(24)
-                        .align_x(alignment::Horizontal::Center) // Center alignment
-                        .align_y(alignment::Vertical::Bottom) // Bottom alignment
+                        .align_x(alignment::Horizontal::Center)
+                        .align_y(alignment::Vertical::Bottom)
                         .font(Font { weight: Weight::Bold, ..Default::default() })
                     ).on_press(Message::Play(Note::Asharp))
                         .style(|theme, status| button_style(theme, status, Color::BLACK))
