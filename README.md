@@ -7,6 +7,8 @@ Simple musical keyboard made in Rust
 
 If you want more up-to-date but unstable functionality, compile the preproduction branch.
 
+### Features 
+
 | Feature                     | Availablity  |
 |-----------------------------|----------------------------------------------------------------------------------------------|
 | **MIDI integration and recording**        | ⏳  |
