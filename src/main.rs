@@ -1,4 +1,4 @@
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 // use other files inside this project
 mod gui;
 mod chord;
