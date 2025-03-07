@@ -221,8 +221,7 @@ enum Message {
     Play(Note),
     PlayChords,
     PlayAsync,
-    StartRecording, 
-    StopRecording
+    ToggleRecoring
 }
 
 // Program struct, which stores the current information the program may need
@@ -239,7 +238,7 @@ struct Program {
     play_chords: bool,
     play_async: bool,
     is_recording: bool
-} 
+}
 
 // implement the Program struct
 // functions: 
@@ -267,7 +266,6 @@ impl Program {
                 song.notes.insert(Some(note.clone()), (octave, time));
             }
         }
-        println!("{:?}", song);
         song
     }
     
@@ -287,16 +285,16 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
-            Message::StartRecording => {
-                self.start_recording();
-                self.is_recording = true;
+            Message::ToggleRecoring => {
+                if self.is_recording == false{
+                    self.start_recording();
+                } else { 
+                    let song = self.stop_recording();
+                    midi::Midi::midi_file_create(song);
+                }
+                //self.is_recording = !self.is_recording;
             },
-            Message::StopRecording => {
-                let song = self.stop_recording();
-                println!("{:?}", song);
-                midi::Midi::midi_file_create(song);
-                self.is_recording = false;
-            },
+
            
             Message::PlayChords => {
                 self.play_chords = !self.play_chords;
@@ -370,8 +368,6 @@ pub fn main() -> iced::Result {
     *AUDIO_SINK.lock().expect("Failed to get AUDIO_SINK") = Some(sink);
     std::mem::forget(stream);
     
-   // midi::Midi::midi_file_create(Song::default()); 
-
     iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)

@@ -82,7 +82,5 @@ impl Midi {
             .expect("Failed to create file")
             .write_all(&buffer)
             .expect("Failed to write to file");
-
-        println!("MIDI file created successfully!");
     }
 }

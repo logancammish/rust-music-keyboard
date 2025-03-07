@@ -197,8 +197,11 @@ impl Program {
 
             widget::column![
                 widget::row!(
-                    button(text("Start recording")).on_press(Message::StartRecording), 
-                    button(text("Stop recording")).on_press(Message::StopRecording)
+                    if self.is_recording {
+                        button(text("Stop recording")).on_press(Message::ToggleRecoring)
+                    } else {
+                        button(text("Record")).on_press(Message::ToggleRecoring)
+                    }
                 ).spacing(10) // Add spacing between buttons
             ].spacing(20)
         ]).into() // Add missing closing delimiters
