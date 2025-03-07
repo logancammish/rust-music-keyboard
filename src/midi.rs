@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::Write;
 use crate::{Note, Song};
 
-pub struct Midi {} 
+pub struct Midi {}
 
 impl Midi {
     pub fn note_to_midi(note: Note, octave: f32) -> u7 {
@@ -22,60 +22,71 @@ impl Midi {
             Note::Asharp => 10,
             Note::B => 11,
         };
-        let octave_difference = (octave - 4.0).round() as u32;
-        let midi_note = 12 * octave_difference + note_index;
-    
+        let midi_note = 12 * (octave as i32 + 1) + note_index;
+
         u7::new(midi_note as u8)
     }
 
-    pub fn bpm_to_microseconds_per_beat(bpm: f32) -> u24 {   
+    pub fn bpm_to_microseconds_per_beat(bpm: f32) -> u24 {
         u24::from((60_000_000.0 / bpm) as u32)
     }
-    
-    pub fn midi_file_create(song: Song) {
-        let header = Header::new(
-            Format::SingleTrack,
-            Timing::Metrical(480.into()) 
-        );
-        let mut smf = Smf::new(header);
 
+    pub fn midi_file_create(song: Song) {
+        let header = Header::new(Format::SingleTrack, Timing::Metrical(480.into()));
+        let mut smf = Smf::new(header);
+    
         let mut track: Vec<TrackEvent<'_>> = Track::new();
         let tempo = MetaMessage::Tempo(Self::bpm_to_microseconds_per_beat(song.bpm));
         track.push(TrackEvent {
             delta: u28::new(0),
             kind: midly::TrackEventKind::Meta(tempo),
         });
+    
+        let mut events = Vec::new();
 
-        for (k, i) in song.notes {
-            let current_note = k.unwrap();
-            let note_on = MidiMessage::NoteOn {
-                key: Self::note_to_midi(current_note.clone(), i.0),  
-                vel: u7::new(64)   
-            };
-            let note_off = MidiMessage::NoteOff {
-                key: Self::note_to_midi(current_note.clone(), i.0),  
-                vel: u7::new(64)
-            };
+        
+        for (note, octave, start_time, duration) in &song.notes {
+            let midi_note = Self::note_to_midi(note.clone(), *octave);
+            let beats_per_second = song.bpm / 60.0;
+            let start_ticks = (start_time * beats_per_second * 480.0).round() as u32;
+            let duration_ticks = (duration * beats_per_second * 480.0).round() as u32;
     
-            track.push(TrackEvent {
-                delta: u28::new(0),
-                kind: midly::TrackEventKind::Midi {
+            events.push((
+                start_ticks,
+                midly::TrackEventKind::Midi {
                     channel: u4::new(0),
-                    message: note_on
+                    message: MidiMessage::NoteOn {
+                        key: midi_note,
+                        vel: u7::new(64),
+                    },
                 },
-            });
+            ));
     
-            track.push(TrackEvent {
-                delta: u28::new(48),
-                kind: midly::TrackEventKind::Midi {
+            events.push((
+                start_ticks + duration_ticks,
+                midly::TrackEventKind::Midi {
                     channel: u4::new(0),
-                    message: note_off
+                    message: MidiMessage::NoteOff {
+                        key: midi_note,
+                        vel: u7::new(64),
+                    },
                 },
-            });
+            ));
         }
-
+    
+        events.sort_by_key(|(time, _)| *time);
+    
+        let mut last_time = 0;
+        for (time, event) in events {
+            track.push(TrackEvent {
+                delta: u28::new(time - last_time),
+                kind: event,
+            });
+            last_time = time;
+        }
+    
         smf.tracks.push(track);
-
+    
         let mut buffer = Vec::new();
         smf.write(&mut buffer).expect("Failed to write to buffer");
         File::create("output.mid")

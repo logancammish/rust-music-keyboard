@@ -20,8 +20,11 @@ trait Playable {
 }
 
 
-static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32)>>>>> = Lazy::new(|| {
+static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(HashMap::new()))
+});
+static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(None))
 });
 
 // Note enum defines all notes in Western music
@@ -110,10 +113,14 @@ impl RealNote {
             .take_duration(Duration::from_secs_f32(time));
 
         if is_recording {
-            let mut recorded_notes = RECORDED_NOTES.lock().unwrap();
-            recorded_notes.entry(self.note.clone())
-                .or_insert_with(Vec::new)
-                .push((self.octave, time));
+            let recording_start_guard = RECORDING_START_TIME.lock().unwrap();
+            if let Some(start_time) = &*recording_start_guard {
+                let elapsed = start_time.elapsed().as_secs_f32();
+                let mut recorded_notes = RECORDED_NOTES.lock().unwrap();
+                recorded_notes.entry(self.note.clone())
+                    .or_insert_with(Vec::new)
+                    .push((self.octave, elapsed, time)); // (octave, start_time, duration)
+            }
         }
 
         let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
@@ -171,24 +178,16 @@ impl Playable for Chord {
 }
 
 #[derive(Debug, Clone)]
-struct Song { 
-    notes: HashMap<Option<Note>, (f32, f32)>,  // Note / Octave / Time played at
-    bpm: f32 
-}
-
-impl Song { 
-    fn convert_to_midi(&self) -> Vec<TrackEvent<'_>> {
-        todo!();
-    }
+struct Song {
+    notes: Vec<(Note, f32, f32, f32)>, // Note, octave, start_time, duration
+    bpm: f32,
 }
 
 impl Default for Song { 
     fn default() -> Self {
-        let mut notes =  HashMap::new();
-        notes.insert(None, (0.0_f32, 0.0_f32));
         Self {
             bpm: 120.0,
-            notes: notes
+            notes: vec![]
         }
     }
 }
@@ -238,6 +237,7 @@ struct Program {
 impl Program { 
     pub fn start_recording(&mut self) {
         self.is_recording = true;
+        *RECORDING_START_TIME.lock().unwrap() = Some(std::time::Instant::now());
         RECORDED_NOTES.lock().unwrap().clear();  
     }
     
@@ -246,13 +246,13 @@ impl Program {
         let recorded_notes = RECORDED_NOTES.lock().unwrap().clone();
     
         let mut song = Song {
-            notes: HashMap::new(),
+            notes: vec![],
             bpm: self.bpm,
         };
     
         for (note, data) in recorded_notes {
-            for (octave, time) in data {
-                song.notes.insert(Some(note.clone()), (octave, time));
+            for (octave, start_time, duration) in data {
+                song.notes.push((note.clone(), octave, start_time, duration));
             }
         }
         song
@@ -308,24 +308,20 @@ impl Program {
             }
 
             Message::Play(note) => {
-                if (self.play_chords == false) && (self.play_async == false) {  
-                    RealNote::play(&RealNote{
-                        note: note, 
-                        length: NoteLength::Whole,
-                        octave: self.octave                    
-                    }, self.bpm, self.is_recording);
+                let note_duration = NoteLength::duration_in_seconds(&NoteLength::Whole, self.bpm);  // Adjusted to use actual duration
+                let real_note = RealNote {
+                    note: note,
+                    length: NoteLength::Whole,  // Use the relevant length or adjust based on actual duration
+                    octave: self.octave,
+                };
+
+                if self.play_chords == false && self.play_async == false {  
+                    real_note.play(self.bpm, self.is_recording);
                 } else if self.play_chords == true { 
-                    Chord::play(&Chord::triad_from_note(&RealNote {
-                        note: note, 
-                        length: NoteLength::Whole,
-                        octave: self.octave
-                    }), self.bpm, self.is_recording);
+                    let chord = Chord::triad_from_note(&real_note);
+                    chord.play(self.bpm, self.is_recording);
                 } else if self.play_async == true {               
-                    RealNote::play_async(&RealNote{ 
-                        note: note, 
-                        length: NoteLength::Whole,
-                        octave: self.octave
-                    }, self.bpm, self.is_recording);
+                    real_note.play_async(self.bpm, self.is_recording);
                 }
             }
         }
@@ -352,6 +348,10 @@ impl Default for Program {
 
 // main function
 pub fn main() -> iced::Result {
+    let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
+    let sink = Sink::try_new(&handle).expect("Failed to create sink");
+    std::mem::forget(stream);
+    
     iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
