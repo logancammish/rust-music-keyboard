@@ -1,10 +1,11 @@
-use iced::{widget::{self, button, checkbox, container, slider, text, text_input, Space}, Background, Color, Length, Theme, alignment, font::Weight, Font}; // Add Font
+use iced::{alignment, border::Radius, font::Weight, widget::{self, button, checkbox, container, slider, text, text_input, Space}, Background, Border, Color, Font, Length, Theme}; // Add Font
 use crate::{Message, Note, Program};
 
 fn button_style(_theme: &Theme, _status: button::Status, note_color: Color) -> button::Style {
     button::Style {
         background: Some(iced::Background::Color(note_color)),
         text_color: if note_color == Color::BLACK { Color::WHITE } else { Color::BLACK },
+        border: Border { radius: Radius::from(2), ..Border::default() }, // Add border with radius
         ..button::Style::default()
     }
 }
@@ -15,7 +16,7 @@ impl Program {
             widget::row!(
                 text("Octave"),
                 slider(
-                    0.0..=10.0,
+                    0.0..=8.0,
                     self.octave,
                     Message::OctaveChange
                 ),
