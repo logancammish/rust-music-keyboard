@@ -20,7 +20,7 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 | **Determine major scales of a note**       | ✔️ |
 | **Play major scale triads according to note**       | ✔️ |
 | **Highlight keys according to a selected major scale**       | ❌ |
-| **Keyboard mapped to note**       | ❌ |
+| **Keyboard mapped to note**       | ✔️ |
 
 ### Building/Downloading
 
