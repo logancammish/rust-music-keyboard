@@ -5,7 +5,7 @@ mod chord;
 mod midi;
 
 // use dependencies     
-use iced::{Theme, Element, Subscription};
+use iced::{Theme, Element, Subscription, keyboard::{self}};
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
 use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
@@ -207,6 +207,7 @@ enum Message {
     BpmChange(f32),
     CustomBpmChange(String),
     Play(Note),
+    KeyPressed(iced::keyboard::Key),
     PlayChords,
     PlayAsync,
     ToggleRecoring
@@ -274,6 +275,29 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::KeyPressed(key) => {
+                match key {
+                    keyboard::Key::Character(c) => {
+                        match c.as_str() {
+                            "a" => self.update(Message::Play(Note::A)),
+                            "w" => self.update(Message::Play(Note::Asharp)),
+                            "s" => self.update(Message::Play(Note::B)),
+                            "d" => self.update(Message::Play(Note::C)),
+                            "r" => self.update(Message::Play(Note::Csharp)),
+                            "f" => self.update(Message::Play(Note::D)),
+                            "t" => self.update(Message::Play(Note::Dsharp)),
+                            "g" => self.update(Message::Play(Note::E)),
+                            "h" => self.update(Message::Play(Note::F)),
+                            "u" => self.update(Message::Play(Note::Fsharp)),
+                            "j" => self.update(Message::Play(Note::G)),
+                            "i" => self.update(Message::Play(Note::Gsharp)),
+                            "k" => self.update(Message::Play(Note::A)),
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
             Message::ToggleRecoring => {
                 if self.is_recording == false{
                     self.start_recording();
@@ -328,7 +352,7 @@ impl Program {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        Subscription::none()
+        keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key)))  
     }
 }
 
@@ -340,7 +364,7 @@ impl Default for Program {
             bpm: 120.0,
             custom_bpm: "120".to_string(),
             play_chords: false,
-            play_async: false,
+            play_async: true,
             is_recording: false
         }
     }

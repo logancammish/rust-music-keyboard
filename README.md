@@ -18,8 +18,9 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 | **Adjust BPM/Octave**       | ✔️ |
 | **Adjust note duration**       | ❌ |
 | **Determine major scales of a note**       | ✔️ |
-| **Play ascending 1st/3rd/5th triad appregios**       | ✔️ |
+| **Play major scale triads according to note**       | ✔️ |
 | **Highlight keys according to a selected major scale**       | ❌ |
+| **Keyboard mapped to note**       | ❌ |
 
 ### Building/Downloading
 
