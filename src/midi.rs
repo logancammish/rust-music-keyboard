@@ -21,6 +21,7 @@ impl Midi {
             Note::A => 9,
             Note::Asharp => 10,
             Note::B => 11,
+            Note::None => 0, // Default to C when Note is None
         };
         let midi_note = 12 * (octave as i32 + 1) + note_index;
 
@@ -43,9 +44,13 @@ impl Midi {
         });
     
         let mut events = Vec::new();
-
         
         for (note, octave, start_time, duration) in &song.notes {
+            // Skip Note::None entries
+            if *note == Note::None {
+                continue;
+            }
+            
             let midi_note = Self::note_to_midi(note.clone(), *octave);
             let beats_per_second = song.bpm / 60.0;
             let start_ticks = (start_time * beats_per_second * 480.0).round() as u32;

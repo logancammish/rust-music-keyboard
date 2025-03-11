@@ -28,9 +28,15 @@ static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy
 });
 
 // Note enum defines all notes in Western music
-#[derive(Debug, Hash, Eq, PartialEq, Clone)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 enum Note { 
-    A, Asharp, B, C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp
+    A, Asharp, B, C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, None
+}
+
+impl Note {
+    pub const ALL: [Note; 13] = [
+        Note::C, Note::Csharp, Note::D, Note::Dsharp, Note::E, Note::F, Note::Fsharp, Note::G, Note::Gsharp, Note::A, Note::Asharp, Note::B, Note::None
+    ];
 }
 
 // NoteLength enum defines the length of a note
@@ -101,6 +107,7 @@ impl RealNote {
             Note::A => 27.50,   
             Note::Asharp => 29.14,
             Note::B => 30.87,
+            Note::None => 0.0,
         }
     }
 
@@ -203,6 +210,7 @@ fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
 // Message enum, which is used to communicate changes to the GUI
 #[derive(Debug, Clone)]
 enum Message { 
+    Scale(Note), 
     OctaveChange(f32),
     BpmChange(f32),
     CustomBpmChange(String),
@@ -220,21 +228,25 @@ enum Message {
 // 3. custom_bpm    -> String representation of the bpm, required for iced
 // 4. play_chords   -> Whether or not the play triad button is selected
 // 5. play_async    -> Whether or not to play notes asynchronously 
+// 6. is_recording  -> Whether or not the program is currently recording
 struct Program { 
     octave: f32,
     bpm: f32,
     custom_bpm: String,
     play_chords: bool,
     play_async: bool,
-    is_recording: bool
+    is_recording: bool,
+    selected_scale: Option<Note>,  // Change type to Option<Note>
 }
 
 // implement the Program struct
 // functions: 
-// 1. update_bpm    -> check and update the bpm
-// 2. view          -> display gui
-// 3. update        -> update Program
-// 4. subscription  -> sets the iced subscription
+// 1. update_bpm      -> check and update the bpm
+// 2. view            -> display gui
+// 3. update          -> update Program
+// 4. subscription    -> sets the iced subscription
+// 5. start_recording -> begin recording midi file
+// 6. stop_recording  -> stop recording midi
 impl Program { 
     pub fn start_recording(&mut self) {
         self.is_recording = true;
@@ -269,12 +281,16 @@ impl Program {
         }
     }
 
-    fn view<'a>(&'a self) -> Element<'a, Message> {
+    fn view(&self) -> Element<Message> {
         Self::get_ui_information(self).into()
     }    
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::Scale(note) => {
+                self.selected_scale = Some(note);  // Update to store a single Note
+            }
+
             Message::KeyPressed(key) => {
                 match key {
                     keyboard::Key::Character(c) => {
@@ -332,10 +348,13 @@ impl Program {
             }
 
             Message::Play(note) => {
-                let note_duration = NoteLength::duration_in_seconds(&NoteLength::Whole, self.bpm);  // Adjusted to use actual duration
+                if note == Note::None {
+                    return;
+                }
+                //let note_duration = NoteLength::duration_in_seconds(&NoteLength::Whole, self.bpm);  
                 let real_note = RealNote {
                     note: note,
-                    length: NoteLength::Whole,  // Use the relevant length or adjust based on actual duration
+                    length: NoteLength::Whole,  
                     octave: self.octave,
                 };
 
@@ -360,6 +379,7 @@ impl Program {
 impl Default for Program { 
     fn default() -> Self {
         Self {
+            selected_scale: None,  // Update default value
             octave: 2.0,
             bpm: 120.0,
             custom_bpm: "120".to_string(),
