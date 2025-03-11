@@ -46,6 +46,7 @@ impl Chord {
         major_scales.insert(Note::Gsharp, vec![
             Note::Gsharp, Note::Asharp, Note::C, Note::Csharp, Note::Dsharp, Note::F, Note::G
         ]);
+        major_scales.insert(Note::None, Note::ALL.to_vec());
 
         major_scales.get(&note).expect("Not a valid scale").clone()
     }

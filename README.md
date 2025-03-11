@@ -16,10 +16,11 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 | **Clear and concise keyboard GUI**       | ✔️ |
 | **Play multiple notes asynchronously**       | ✔️ |
 | **Adjust BPM/Octave**       | ✔️ |
-| **Adjust note duration**       | ❌ |
+| **Adjust note duration based on length note is held for**       | ❌ |
 | **Determine major scales of a note**       | ✔️ |
-| **Play ascending 1st/3rd/5th triad appregios**       | ✔️ |
-| **Highlight keys according to a selected major scale**       | ❌ |
+| **Play major scale triads according to note**       | ✔️ |
+| **Highlight keys according to a selected major scale**       | ✔️ |
+| **Keyboard mapped to note**       | ✔️ |
 
 ### Building/Downloading
 
