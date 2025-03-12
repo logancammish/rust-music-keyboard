@@ -15,6 +15,7 @@ once_cell = {version="1.21.0"}
 tokio = { version = "1.44.0", features = ["full"] }
 futures = "0.3.31"
 iced_native = "0.10.3"
+strum_macros = "x"
 
 [[bin]]
 name = "KeyboardAppLCammish"

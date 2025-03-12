@@ -23,7 +23,7 @@ If you want more up-to-date but unstable functionality, compile the preproductio
 
 ### Building/Downloading
 
-This application officially supports Windows and Linux. 
+This application officially supports Windows, and should work fine on Linux. 
 1. Ensure you have cargo installed, if not install with [Rustup](https://www.rust-lang.org/tools/install)
 2. Clone this repository (`git clone https://github.com/logancammish/rust-music-keyboard.git`)
 3. Build with `cargo build --release`
