@@ -3336,6 +3336,7 @@ dependencies = [
  "rodio",
  "threadpool",
  "tokio",
+ "winresource",
 ]
 
 [[package]]
@@ -4849,6 +4850,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
  "winapi",
+]
+
+[[package]]
+name = "winresource"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba4a67c78ee5782c0c1cb41bebc7e12c6e79644daa1650ebbc1de5d5b08593f7"
+dependencies = [
+ "toml 0.8.20",
+ "version_check",
 ]
 
 [[package]]

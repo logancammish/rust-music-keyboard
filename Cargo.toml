@@ -20,3 +20,6 @@ iced_native = "0.10.3"
 name = "KeyboardAppLCammish"
 path = "src/main.rs"
 windows = true
+
+[build-dependencies]
+winresource = "0.1.20"
