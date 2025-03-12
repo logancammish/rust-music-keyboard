@@ -45,7 +45,7 @@ impl Note {
 
 // NoteLength enum defines the length of a note
 // to be calculated according to beats per minute
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 enum NoteLength {  
     Whole, Half, Quarter, Eighth, Sixteenth
 }
@@ -222,7 +222,8 @@ enum Message {
     PlayChords,
     PlayAsync,
     ToggleRecoring,
-    Tick,  
+    Tick, 
+    NoteLengthChange(f32) 
 }
 
 // Program struct, which stores the current information the program may need
@@ -241,7 +242,8 @@ struct Program {
     play_async: bool,
     is_recording: bool,
     selected_scale: Option<Note>,  
-    time_elapsed: f32, 
+    time_elapsed: f32,
+    note_length: f32 
 }
 
 // implement the Program struct
@@ -292,6 +294,10 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::NoteLengthChange(value) => {
+                self.note_length = value;
+            }
+
             Message::Scale(note) => {
                 self.selected_scale = Some(note);  // Update to store a single Note
             }
@@ -356,9 +362,18 @@ impl Program {
                     return;
                 }
 
+                let note_length: NoteLength = match self.note_length {
+                    5.0 => NoteLength::Whole,
+                    4.0 => NoteLength::Half,
+                    3.0 => NoteLength::Quarter,
+                    2.0 => NoteLength::Eighth,
+                    1.0 => NoteLength::Sixteenth,
+                    _ =>  NoteLength::Whole
+                };
+
                 let real_note = RealNote {
                     note: note,
-                    length: NoteLength::Whole,  
+                    length: note_length, 
                     octave: self.octave,
                 };
 
@@ -419,8 +434,9 @@ impl Program {
 impl Default for Program { 
     fn default() -> Self {
         Self {
+            note_length: 2.0, 
             selected_scale: None,  
-            octave: 2.0,
+            octave: 4.0,
             bpm: 120.0,
             custom_bpm: "120".to_string(),
             play_chords: false,

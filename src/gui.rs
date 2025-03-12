@@ -54,11 +54,20 @@ impl Program {
     pub fn get_ui_information(&self) -> iced::widget::Container<Message> {
         container(widget::column![
             widget::row!(
-                text("Octave"),
+                text("Octave:"),
                 slider(
-                    0.0..=8.0,
+                    0.0..=7.0,
                     self.octave,
                     Message::OctaveChange
+                ),
+            ).spacing(10),
+
+            widget::row!(
+                text("Note Length"),
+                slider(
+                    1.0..=5.0,
+                    self.note_length,
+                    Message::NoteLengthChange
                 ),
             ).spacing(10),
 
