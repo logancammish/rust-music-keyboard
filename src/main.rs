@@ -6,12 +6,16 @@ mod midi;
 
 // use dependencies     
 use iced::{Theme, Element, Subscription, keyboard::{self}};
+use iced_native::subscription::Recipe;
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
 use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
-use midly::TrackEvent;
+use iced::futures::{self, Stream};
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use futures::stream::StreamExt;
 
 // playable trait to implement polymorphism
 // for structs RealNote and Chord
@@ -52,7 +56,6 @@ enum NoteLength {
 // 1. duration_in_seconds -> calculates the time 
 //                           in seconds that a note should last
 // 2. check_bpm           -> checks if the bpm is valid
-//                           (not below of equal to 0 or above 300)
 impl NoteLength { 
     pub fn duration_in_seconds(&self, bpm: f32) -> f32 {
         match self {
@@ -207,7 +210,7 @@ fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
     }
 }
 
-// Message enum, which is used to communicate changes to the GUI
+// Message enum 
 #[derive(Debug, Clone)]
 enum Message { 
     Scale(Note), 
@@ -218,7 +221,8 @@ enum Message {
     KeyPressed(iced::keyboard::Key),
     PlayChords,
     PlayAsync,
-    ToggleRecoring
+    ToggleRecoring,
+    Tick,  
 }
 
 // Program struct, which stores the current information the program may need
@@ -236,7 +240,8 @@ struct Program {
     play_chords: bool,
     play_async: bool,
     is_recording: bool,
-    selected_scale: Option<Note>,  // Change type to Option<Note>
+    selected_scale: Option<Note>,  
+    time_elapsed: f32, 
 }
 
 // implement the Program struct
@@ -321,7 +326,6 @@ impl Program {
                     let song = self.stop_recording();
                     midi::Midi::midi_file_create(song);
                 }
-                //self.is_recording = !self.is_recording;
             },
 
            
@@ -351,7 +355,7 @@ impl Program {
                 if note == Note::None {
                     return;
                 }
-                //let note_duration = NoteLength::duration_in_seconds(&NoteLength::Whole, self.bpm);  
+
                 let real_note = RealNote {
                     note: note,
                     length: NoteLength::Whole,  
@@ -367,11 +371,47 @@ impl Program {
                     real_note.play_async(self.bpm, self.is_recording);
                 }
             }
+            Message::Tick => {
+                if self.is_recording {
+                    let now = std::time::Instant::now();
+                    self.time_elapsed = now.duration_since(*RECORDING_START_TIME.lock().unwrap().as_ref().unwrap()).as_secs_f32();
+                } else {
+                    self.time_elapsed = 0.0;
+                }
+            }
         }
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key)))  
+        struct Timer;
+        impl<H: std::hash::Hasher, E> Recipe<H, E> for Timer {            
+            type Output = Message;
+            fn hash(&self, state: &mut H) {
+                use std::hash::Hash;
+                "timer".hash(state);
+            }
+
+            fn stream(self: Box<Self>, _: futures::stream::BoxStream<'static, E>) -> futures::stream::BoxStream<'static, Self::Output> {
+                futures::stream::unfold((), |_| async {
+                    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+                    Some((Message::Tick, ()))
+                }).boxed()
+            }
+        }
+
+        impl Stream for Timer {
+            type Item = Message;
+
+            fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+                cx.waker().wake_by_ref();
+                Poll::Ready(Some(Message::Tick))
+            }
+        }
+
+        Subscription::batch(vec![
+            keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key))),
+            Subscription::run_with_id("timer", Timer)
+        ])
     }
 }
 
@@ -379,13 +419,14 @@ impl Program {
 impl Default for Program { 
     fn default() -> Self {
         Self {
-            selected_scale: None,  // Update default value
+            selected_scale: None,  
             octave: 2.0,
             bpm: 120.0,
             custom_bpm: "120".to_string(),
             play_chords: false,
             play_async: true,
-            is_recording: false
+            is_recording: false,
+            time_elapsed: 0.0,
         }
     }
 }
@@ -393,7 +434,7 @@ impl Default for Program {
 // main function
 pub fn main() -> iced::Result {
     let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-    let sink = Sink::try_new(&handle).expect("Failed to create sink");
+    let _sink = Sink::try_new(&handle).expect("Failed to create sink");
     std::mem::forget(stream);
     
     iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
