@@ -5,12 +5,13 @@ mod chord;
 mod midi;
 
 // use dependencies     
-use iced::{Theme, Element, Subscription, keyboard::{self}};
+use iced::{keyboard::{self}, window::{self, settings, Icon}, Element, Size, Subscription, Theme};
 use iced_native::subscription::Recipe;
 use once_cell::sync::Lazy;
-use strum_macros::Display;
 use rodio::{self, OutputStream, Sink, Source};
-use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
+use strum_macros::Display;
+use std::io::{self, Read};
+use std::{collections::HashMap, fs::File, path::PathBuf, sync::{Arc, Mutex}, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
 use iced::futures::{self, Stream};
@@ -256,6 +257,17 @@ struct Program {
 // 5. start_recording -> begin recording midi file
 // 6. stop_recording  -> stop recording midi
 impl Program { 
+    pub fn get_note_length(length: f32) -> NoteLength { 
+        return match length {
+            5.0 => NoteLength::Whole,
+            4.0 => NoteLength::Half,
+            3.0 => NoteLength::Quarter,
+            2.0 => NoteLength::Eighth,
+            1.0 => NoteLength::Sixteenth,
+            _ =>  NoteLength::Whole
+        }; 
+    }
+
     pub fn start_recording(&mut self) {
         self.is_recording = true;
         *RECORDING_START_TIME.lock().unwrap() = Some(std::time::Instant::now());
@@ -293,17 +305,6 @@ impl Program {
         Self::get_ui_information(self).into()
     }    
     
-    pub fn get_note_length(length: f32) -> NoteLength { 
-        return match length {
-            5.0 => NoteLength::Whole,
-            4.0 => NoteLength::Half,
-            3.0 => NoteLength::Quarter,
-            2.0 => NoteLength::Eighth,
-            1.0 => NoteLength::Sixteenth,
-            _ =>  NoteLength::Whole
-        }; 
-    }
-
     fn update(&mut self, message: Message) { 
         match message { 
             Message::NoteLengthChange(value) => {
@@ -459,14 +460,59 @@ impl Default for Program {
     }
 }
 
+
 // main function
 pub fn main() -> iced::Result {
-    let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-    let _sink = Sink::try_new(&handle).expect("Failed to create sink");
-    std::mem::forget(stream);
-    
-    iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
+    let mut icon_bytes = Vec::new();
+    let mut file = match File::open("./assets/icon.ico") {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Failed to open the icon file: {}", e);
+            return Ok(()); 
+        }
+    };
+
+    if let Err(e) = file.read_to_end(&mut icon_bytes) {
+        eprintln!("Failed to read the icon file: {}", e);
+        return Ok(()); 
+    }
+
+    let icon = match image::ImageReader::open("./assets/icon.ico") {
+        Ok(image_reader) => {
+            match image_reader.decode() {
+                Ok(img) => {
+                    let rgba_image = img.into_rgba8();
+                    let (width, height) = rgba_image.dimensions();
+                    
+                    match iced::window::icon::from_rgba(rgba_image.into_raw(), width, height) {
+                        Ok(icon) => Some(icon),
+                        Err(e) => {
+                            eprintln!("Failed to create icon: {}", e);
+                            None
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("Failed to decode the image: {}", e);
+                    None
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("Failed to open the icon file: {}", e);
+            None
+        }
+    };
+
+    let window_settings = iced::window::Settings {
+        icon,
+        ..iced::window::Settings::default()
+    };
+
+    iced::application("Rust Music Keyboard", Program::update, Program::view)
+        .window_size(Size::new(700.0, 720.0))
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
+        .window(window_settings)
         .run()
 }
