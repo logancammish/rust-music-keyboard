@@ -5,16 +5,21 @@ mod chord;
 mod midi;
 
 // use dependencies     
-use iced::{Theme, Element, Subscription, keyboard::{self}};
+use iced::{keyboard::{self}, window::{self, settings, Icon}, Element, Size, Subscription, Theme};
+use iced_native::subscription::Recipe;
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
-use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
+use std::io::{self, Read};
+use std::{collections::HashMap, fs::File, path::PathBuf, sync::{Arc, Mutex}, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
-use midly::TrackEvent;
+use iced::futures::{self, Stream};
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use futures::stream::StreamExt;
 
 // playable trait to implement polymorphism
-// for structs RealNote and Chord
+// for structs RealNote and Chordf
 trait Playable {
     fn play(&self, bpm: f32, is_recording: bool);
 }
@@ -41,7 +46,7 @@ impl Note {
 
 // NoteLength enum defines the length of a note
 // to be calculated according to beats per minute
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 enum NoteLength {  
     Whole, Half, Quarter, Eighth, Sixteenth
 }
@@ -52,7 +57,6 @@ enum NoteLength {
 // 1. duration_in_seconds -> calculates the time 
 //                           in seconds that a note should last
 // 2. check_bpm           -> checks if the bpm is valid
-//                           (not below of equal to 0 or above 300)
 impl NoteLength { 
     pub fn duration_in_seconds(&self, bpm: f32) -> f32 {
         match self {
@@ -207,7 +211,7 @@ fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
     }
 }
 
-// Message enum, which is used to communicate changes to the GUI
+// Message enum 
 #[derive(Debug, Clone)]
 enum Message { 
     Scale(Note), 
@@ -218,7 +222,9 @@ enum Message {
     KeyPressed(iced::keyboard::Key),
     PlayChords,
     PlayAsync,
-    ToggleRecoring
+    ToggleRecoring,
+    Tick, 
+    NoteLengthChange(f32) 
 }
 
 // Program struct, which stores the current information the program may need
@@ -236,7 +242,9 @@ struct Program {
     play_chords: bool,
     play_async: bool,
     is_recording: bool,
-    selected_scale: Option<Note>,  // Change type to Option<Note>
+    selected_scale: Option<Note>,  
+    time_elapsed: f32,
+    note_length: f32 
 }
 
 // implement the Program struct
@@ -287,6 +295,10 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::NoteLengthChange(value) => {
+                self.note_length = value;
+            }
+
             Message::Scale(note) => {
                 self.selected_scale = Some(note);  // Update to store a single Note
             }
@@ -321,7 +333,6 @@ impl Program {
                     let song = self.stop_recording();
                     midi::Midi::midi_file_create(song);
                 }
-                //self.is_recording = !self.is_recording;
             },
 
            
@@ -351,10 +362,19 @@ impl Program {
                 if note == Note::None {
                     return;
                 }
-                //let note_duration = NoteLength::duration_in_seconds(&NoteLength::Whole, self.bpm);  
+
+                let note_length: NoteLength = match self.note_length {
+                    5.0 => NoteLength::Whole,
+                    4.0 => NoteLength::Half,
+                    3.0 => NoteLength::Quarter,
+                    2.0 => NoteLength::Eighth,
+                    1.0 => NoteLength::Sixteenth,
+                    _ =>  NoteLength::Whole
+                };
+
                 let real_note = RealNote {
                     note: note,
-                    length: NoteLength::Whole,  
+                    length: note_length, 
                     octave: self.octave,
                 };
 
@@ -367,11 +387,47 @@ impl Program {
                     real_note.play_async(self.bpm, self.is_recording);
                 }
             }
+            Message::Tick => {
+                if self.is_recording {
+                    let now = std::time::Instant::now();
+                    self.time_elapsed = now.duration_since(*RECORDING_START_TIME.lock().unwrap().as_ref().unwrap()).as_secs_f32();
+                } else {
+                    self.time_elapsed = 0.0;
+                }
+            }
         }
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key)))  
+        struct Timer;
+        impl<H: std::hash::Hasher, E> Recipe<H, E> for Timer {            
+            type Output = Message;
+            fn hash(&self, state: &mut H) {
+                use std::hash::Hash;
+                "timer".hash(state);
+            }
+
+            fn stream(self: Box<Self>, _: futures::stream::BoxStream<'static, E>) -> futures::stream::BoxStream<'static, Self::Output> {
+                futures::stream::unfold((), |_| async {
+                    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+                    Some((Message::Tick, ()))
+                }).boxed()
+            }
+        }
+
+        impl Stream for Timer {
+            type Item = Message;
+
+            fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+                cx.waker().wake_by_ref();
+                Poll::Ready(Some(Message::Tick))
+            }
+        }
+
+        Subscription::batch(vec![
+            keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key))),
+            Subscription::run_with_id("timer", Timer)
+        ])
     }
 }
 
@@ -379,25 +435,73 @@ impl Program {
 impl Default for Program { 
     fn default() -> Self {
         Self {
-            selected_scale: None,  // Update default value
-            octave: 2.0,
+            note_length: 2.0, 
+            selected_scale: None,  
+            octave: 4.0,
             bpm: 120.0,
             custom_bpm: "120".to_string(),
             play_chords: false,
             play_async: true,
-            is_recording: false
+            is_recording: false,
+            time_elapsed: 0.0,
         }
     }
 }
 
+
 // main function
 pub fn main() -> iced::Result {
-    let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-    let sink = Sink::try_new(&handle).expect("Failed to create sink");
-    std::mem::forget(stream);
-    
-    iced::application("Rust Music Keyboard (c) 2025 Logan Cammish", Program::update, Program::view) 
+    let mut icon_bytes = Vec::new();
+    let mut file = match File::open("./assets/icon.ico") {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Failed to open the icon file: {}", e);
+            return Ok(()); 
+        }
+    };
+
+    if let Err(e) = file.read_to_end(&mut icon_bytes) {
+        eprintln!("Failed to read the icon file: {}", e);
+        return Ok(()); 
+    }
+
+    let icon = match image::ImageReader::open("./assets/icon.ico") {
+        Ok(image_reader) => {
+            match image_reader.decode() {
+                Ok(img) => {
+                    let rgba_image = img.into_rgba8();
+                    let (width, height) = rgba_image.dimensions();
+                    
+                    match iced::window::icon::from_rgba(rgba_image.into_raw(), width, height) {
+                        Ok(icon) => Some(icon),
+                        Err(e) => {
+                            eprintln!("Failed to create icon: {}", e);
+                            None
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("Failed to decode the image: {}", e);
+                    None
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("Failed to open the icon file: {}", e);
+            None
+        }
+    };
+
+    let window_settings = iced::window::Settings {
+        icon,
+        ..iced::window::Settings::default()
+    };
+
+    iced::application("Rust Music Keyboard", Program::update, Program::view)
+        .window_size(Size::new(700.0, 720.0))
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
+        .window(window_settings)
         .run()
 }
+

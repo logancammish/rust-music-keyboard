@@ -1,5 +1,7 @@
-use iced::{alignment, border::Radius, font::Weight, widget::{self, button, checkbox, container, pick_list, slider, text, text_input, Space}, Background, Border, Color, Font, Length, Theme};
+use iced::{alignment, border::Radius, font::Weight, widget::{self, button, checkbox, container, pick_list, slider, text, text_input, Space}, Border, Color, Font, Length, Theme};
 use crate::{Message, Note, Program, Chord};
+use std::{time::{Duration, Instant}};
+
 use std::fmt;
 use std::string::ToString;
 
@@ -52,11 +54,20 @@ impl Program {
     pub fn get_ui_information(&self) -> iced::widget::Container<Message> {
         container(widget::column![
             widget::row!(
-                text("Octave"),
+                text("Octave:"),
                 slider(
-                    0.0..=8.0,
+                    0.0..=7.0,
                     self.octave,
                     Message::OctaveChange
+                ),
+            ).spacing(10),
+
+            widget::row!(
+                text("Note Length"),
+                slider(
+                    1.0..=5.0,
+                    self.note_length,
+                    Message::NoteLengthChange
                 ),
             ).spacing(10),
 
@@ -239,8 +250,11 @@ impl Program {
                         button(text("Stop recording")).on_press(Message::ToggleRecoring)
                     } else {
                         button(text("Record")).on_press(Message::ToggleRecoring)
-                    }
+                    },
+                    text(format!("Time recorded: {:.2}",  self.time_elapsed
+                    )),
                 ).spacing(10) 
+
             ].spacing(20),
 
             Space::with_height(50), 
