@@ -16,6 +16,7 @@ tokio = { version = "1.44.0", features = ["full"] }
 futures = "0.3.31"
 iced_native = "0.10.3"
 strum_macros = "0.27.1"
+async-trait = "x" 
 
 [[bin]]
 name = "KeyboardAppLCammish"

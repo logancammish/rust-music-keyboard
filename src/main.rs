@@ -20,7 +20,7 @@ use std::task::{Context, Poll};
 use futures::stream::StreamExt;
 
 // playable trait to implement polymorphism
-// for structs RealNote and Chord
+// for structs RealNote and Chordf
 trait Playable {
     fn play(&self, bpm: f32, is_recording: bool);
 }
@@ -31,6 +31,9 @@ static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = L
 });
 static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(None))
+});
+static THREAD_POOL: Lazy<Arc<Mutex<ThreadPool>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(ThreadPool::new(num_cpus::get())))
 });
 
 // Note enum defines all notes in Western music
@@ -205,10 +208,9 @@ impl Default for Song {
 }
 
 fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
-    let pool = ThreadPool::new(num_cpus::get());
     for note in notes {
         let note = note.clone();
-        pool.execute(move || note.play_sound(bpm, is_recording));
+        THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording));
     }
 }
 
@@ -516,3 +518,4 @@ pub fn main() -> iced::Result {
         .window(window_settings)
         .run()
 }
+
