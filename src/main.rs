@@ -5,15 +5,13 @@ mod chord;
 mod midi;
 
 // use dependencies     
-use iced::{keyboard::{self}, window::{self, settings, Icon}, Element, Size, Subscription, Theme};
+use iced::{keyboard::{self}, Element, Size, Subscription, Theme};
 use iced_native::subscription::Recipe;
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
 use strum_macros::Display;
-use std::io::{self, Read};
-use std::{thread, collections::HashMap, fs::File, path::PathBuf, sync::{Arc, Mutex}, time::Duration};
-use threadpool::ThreadPool;
-use num_cpus;
+use std::io::Read;
+use std::{thread, collections::HashMap, fs::File,  sync::{Arc, Mutex}, time::Duration};
 use iced::futures::{self, Stream};
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -522,4 +520,3 @@ pub fn main() -> iced::Result {
         .window(window_settings)
         .run()
 }
-
