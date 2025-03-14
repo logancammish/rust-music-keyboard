@@ -69,6 +69,7 @@ impl Program {
                     self.note_length,
                     Message::NoteLengthChange
                 ),
+                text(format!("Length: {}", Self::get_note_length(self.note_length))),
             ).spacing(10),
 
             widget::row!(
@@ -249,9 +250,9 @@ impl Program {
                     if self.is_recording {
                         button(text("Stop recording")).on_press(Message::ToggleRecoring)
                     } else {
-                        button(text("Record")).on_press(Message::ToggleRecoring)
+                        button(text("Start recording")).on_press(Message::ToggleRecoring)
                     },
-                    text(format!("Time recorded: {:.2}",  self.time_elapsed
+                    text(format!("Time recorded: {:.2}s",  self.time_elapsed
                     )),
                 ).spacing(10) 
 
