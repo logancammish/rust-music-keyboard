@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
 use strum_macros::Display;
 use std::io::{self, Read};
-use std::{collections::HashMap, fs::File, path::PathBuf, sync::{Arc, Mutex}, time::Duration};
+use std::{thread, collections::HashMap, fs::File, path::PathBuf, sync::{Arc, Mutex}, time::Duration};
 use threadpool::ThreadPool;
 use num_cpus;
 use iced::futures::{self, Stream};
@@ -32,9 +32,9 @@ static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = L
 static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(None))
 });
-static THREAD_POOL: Lazy<Arc<Mutex<ThreadPool>>> = Lazy::new(|| {
-    Arc::new(Mutex::new(ThreadPool::new(num_cpus::get())))
-});
+// static THREAD_POOL: Lazy<Arc<Mutex<ThreadPool>>> = Lazy::new(|| {
+//     Arc::new(Mutex::new(ThreadPool::new(num_cpus::get())))
+// });
 
 // Note enum defines all notes in Western music
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
@@ -122,10 +122,11 @@ impl RealNote {
     fn play_sound(&self, bpm: f32, is_recording: bool) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
         let frequency = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
-        
         let source = rodio::source::SineWave::new(frequency)
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
+        let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
+        let sink = Sink::try_new(&handle).expect("Failed to create sink");
 
         if is_recording {
             let recording_start_guard = RECORDING_START_TIME.lock().unwrap();
@@ -137,11 +138,9 @@ impl RealNote {
                     .push((self.octave, elapsed, time)); // (octave, start_time, duration)
             }
         }
-
-        let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-        let sink = Sink::try_new(&handle).expect("Failed to create sink");
         sink.append(source);
         sink.play(); 
+        sink.set_volume(2.0);
         sink.sleep_until_end();
     }
 
@@ -210,7 +209,11 @@ impl Default for Song {
 fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
     for note in notes {
         let note = note.clone();
-        THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording));
+        //THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording, sink));
+
+        thread::spawn(move || {
+            note.play_sound(bpm, is_recording)
+        });
     }
 }
 
@@ -510,6 +513,7 @@ pub fn main() -> iced::Result {
         icon,
         ..iced::window::Settings::default()
     };
+
 
     iced::application("Rust Music Keyboard", Program::update, Program::view)
         .window_size(Size::new(700.0, 720.0))
