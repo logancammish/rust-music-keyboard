@@ -337,12 +337,11 @@ impl Program {
                 widget::row!(
                     text("Volume:"),
                     slider(
-                        0.0..=5.0,
+                        0.0..=100.0,
                         self.volume,
                         Message::VolumeChange
                     ),
-                    text(format!("{}%",  
-                    (self.volume) * 20.0)),
+                    text(format!("{}%",  self.volume)),
                 ).spacing(10),
             ]
             

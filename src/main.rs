@@ -135,7 +135,7 @@ impl RealNote {
         }
         sink.append(source);
         sink.play(); 
-        sink.set_volume(volume);
+        sink.set_volume(volume / 20.0);
         sink.sleep_until_end();
     }
 
@@ -502,7 +502,7 @@ impl Default for Program {
             play_async: true,
             is_recording: false,
             time_elapsed: 0.0,
-            volume: 2.0,
+            volume: 30.0,
             buttons_pressed
         }
     }
