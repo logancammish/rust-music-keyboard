@@ -20,7 +20,7 @@ use futures::stream::StreamExt;
 // playable trait to implement polymorphism
 // for structs RealNote and Chordf
 trait Playable {
-    fn play(&self, bpm: f32, is_recording: bool);
+    fn play(&self, bpm: f32, is_recording: bool, volume: f32);
 }
 
 
@@ -30,9 +30,6 @@ static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = L
 static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(None))
 });
-// static THREAD_POOL: Lazy<Arc<Mutex<ThreadPool>>> = Lazy::new(|| {
-//     Arc::new(Mutex::new(ThreadPool::new(num_cpus::get())))
-// });
 
 // Note enum defines all notes in Western music
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
@@ -117,7 +114,7 @@ impl RealNote {
         }
     }
 
-    fn play_sound(&self, bpm: f32, is_recording: bool) {  
+    fn play_sound(&self, bpm: f32, is_recording: bool, volume: f32) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
         let frequency = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
         let source = rodio::source::SineWave::new(frequency)
@@ -138,20 +135,20 @@ impl RealNote {
         }
         sink.append(source);
         sink.play(); 
-        sink.set_volume(2.0);
+        sink.set_volume(volume);
         sink.sleep_until_end();
     }
 
-    fn play_async(&self, bpm: f32, is_recording: bool) { 
+    fn play_async(&self, bpm: f32, is_recording: bool, volume: f32) { 
         let notes = vec![self.clone()];
-        async_play_note(&notes, bpm, is_recording);
+        async_play_note(&notes, bpm, is_recording, volume);
     }
 }
 
 // implement Playable trait for RealNote 
 impl Playable for RealNote { 
-    fn play(&self, bpm: f32, is_recording: bool) {
-        self.play_sound(bpm, is_recording);
+    fn play(&self, bpm: f32, is_recording: bool, volume: f32) {
+        self.play_sound(bpm, is_recording, volume);
     }
 }
 
@@ -184,8 +181,8 @@ impl Chord {
 
 // implement Playable trait for Chord
 impl Playable for Chord { 
-    fn play(&self, bpm: f32, is_recording: bool) {
-        async_play_note(&self.notes, bpm, is_recording);
+    fn play(&self, bpm: f32, is_recording: bool, volume: f32) {
+        async_play_note(&self.notes, bpm, is_recording, volume);
     }
 }
 
@@ -204,13 +201,13 @@ impl Default for Song {
     }
 }
 
-fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool) {
+fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool, volume: f32) {
     for note in notes {
         let note = note.clone();
         //THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording, sink));
 
         thread::spawn(move || {
-            note.play_sound(bpm, is_recording)
+            note.play_sound(bpm, is_recording, volume);
         });
     }
 }
@@ -224,11 +221,13 @@ enum Message {
     CustomBpmChange(String),
     Play(Note),
     KeyPressed(iced::keyboard::Key),
+    KeyReleased(iced::keyboard::Key),
     PlayChords,
     PlayAsync,
     ToggleRecoring,
     Tick, 
-    NoteLengthChange(f32) 
+    NoteLengthChange(f32),
+    VolumeChange(f32)
 }
 
 // Program struct, which stores the current information the program may need
@@ -248,7 +247,9 @@ struct Program {
     is_recording: bool,
     selected_scale: Option<Note>,  
     time_elapsed: f32,
-    note_length: f32 
+    note_length: f32,
+    volume: f32,
+    buttons_pressed: HashMap<Note, bool>
 }
 
 // implement the Program struct
@@ -305,8 +306,8 @@ impl Program {
     }
 
     fn view(&self) -> Element<Message> {
-        Self::get_ui_information(self).into()
-    }    
+        Self::get_ui_information(self, self.buttons_pressed.clone()).into()
+    }
     
     fn update(&mut self, message: Message) { 
         match message { 
@@ -314,28 +315,60 @@ impl Program {
                 self.note_length = value;
             }
 
+            Message::VolumeChange(value) => {
+                self.volume = value;
+            }
+
             Message::Scale(note) => {
-                self.selected_scale = Some(note);  // Update to store a single Note
+                self.selected_scale = Some(note); 
             }
 
             Message::KeyPressed(key) => {
                 match key {
                     keyboard::Key::Character(c) => {
-                        match c.as_str() {
-                            "a" => self.update(Message::Play(Note::A)),
-                            "w" => self.update(Message::Play(Note::Asharp)),
-                            "s" => self.update(Message::Play(Note::B)),
-                            "d" => self.update(Message::Play(Note::C)),
-                            "r" => self.update(Message::Play(Note::Csharp)),
-                            "f" => self.update(Message::Play(Note::D)),
-                            "t" => self.update(Message::Play(Note::Dsharp)),
-                            "g" => self.update(Message::Play(Note::E)),
-                            "h" => self.update(Message::Play(Note::F)),
-                            "u" => self.update(Message::Play(Note::Fsharp)),
-                            "j" => self.update(Message::Play(Note::G)),
-                            "i" => self.update(Message::Play(Note::Gsharp)),
-                            "k" => self.update(Message::Play(Note::A)),
-                            _ => {}
+                        let note = match c.as_str() {
+                            "a" => Some(Note::C),
+                            "w" => Some(Note::Csharp),
+                            "s" => Some(Note::D),
+                            "r" => Some(Note::Dsharp),
+                            "f" => Some(Note::E),
+                            "g" => Some(Note::F),
+                            "u" => Some(Note::Fsharp),
+                            "h" => Some(Note::G),
+                            "i" => Some(Note::Gsharp),
+                            "j" => Some(Note::A),
+                            "k" => Some(Note::B),
+                            _ => None
+                        };
+
+                        if let Some(note) = note {
+                            self.buttons_pressed.insert(note, true);
+                            self.update(Message::Play(note));
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            Message::KeyReleased(key) => {
+                match key {
+                    keyboard::Key::Character(c) => {
+                        let note = match c.as_str() {
+                            "a" => Some(Note::C),
+                            "w" => Some(Note::Csharp),
+                            "s" => Some(Note::D),
+                            "r" => Some(Note::Dsharp),
+                            "f" => Some(Note::E),
+                            "g" => Some(Note::F),
+                            "u" => Some(Note::Fsharp),
+                            "h" => Some(Note::G),
+                            "i" => Some(Note::Gsharp),
+                            "j" => Some(Note::A),
+                            "k" => Some(Note::B),
+                            _ => None
+                        };
+
+                        if let Some(note) = note {
+                            self.buttons_pressed.insert(note, false);
                         }
                     },
                     _ => {}
@@ -394,12 +427,12 @@ impl Program {
                 };
 
                 if self.play_chords == false && self.play_async == false {  
-                    real_note.play(self.bpm, self.is_recording);
+                    real_note.play(self.bpm, self.is_recording, self.volume);
                 } else if self.play_chords == true { 
                     let chord = Chord::triad_from_note(&real_note);
-                    chord.play(self.bpm, self.is_recording);
+                    chord.play(self.bpm, self.is_recording, self.volume);
                 } else if self.play_async == true {               
-                    real_note.play_async(self.bpm, self.is_recording);
+                    real_note.play_async(self.bpm, self.is_recording, self.volume);
                 }
             }
             Message::Tick => {
@@ -441,6 +474,7 @@ impl Program {
 
         Subscription::batch(vec![
             keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key))),
+            keyboard::on_key_release(|key, _modifiers| Some(Message::KeyReleased(key))),
             Subscription::run_with_id("timer", Timer)
         ])
     }
@@ -449,6 +483,15 @@ impl Program {
 // changing Default for Program
 impl Default for Program { 
     fn default() -> Self {
+        let mut buttons_pressed = HashMap::new();
+        for note in [
+            Note::C, Note::Csharp, Note::D, Note::Dsharp, 
+            Note::E, Note::F, Note::Fsharp, Note::G, 
+            Note::Gsharp, Note::A, Note::Asharp, Note::B
+        ].iter() {
+            buttons_pressed.insert(*note, false);
+        }
+
         Self {
             note_length: 2.0, 
             selected_scale: None,  
@@ -459,6 +502,8 @@ impl Default for Program {
             play_async: true,
             is_recording: false,
             time_elapsed: 0.0,
+            volume: 2.0,
+            buttons_pressed
         }
     }
 }
