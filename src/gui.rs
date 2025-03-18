@@ -1,7 +1,6 @@
-use iced::{alignment, keyboard, border::Radius, font::Weight, widget::{self, MouseArea, button, checkbox, container, pick_list, slider, text, text_input, Space}, Border, Color, Font, Length, Theme};
-use iced_native::Command;
+use iced::{alignment, border::Radius, font::Weight, widget::{self, MouseArea, button, checkbox, container, pick_list, slider, text, text_input, Space}, Border, Color, Font, Length, Theme};
 use crate::{Message, Note, Program, Chord};
-use std::{collections::HashMap, hash::Hash, sync::{Arc, Mutex}, time::{Duration, Instant}};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
 use std::string::ToString;
 
