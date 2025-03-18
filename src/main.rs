@@ -219,7 +219,7 @@ enum Message {
     OctaveChange(f32),
     BpmChange(f32),
     CustomBpmChange(String),
-    Play(Note),
+    Play(Note, bool), // True if played with gui
     KeyPressed(iced::keyboard::Key),
     KeyReleased(iced::keyboard::Key),
     PlayChords,
@@ -306,8 +306,9 @@ impl Program {
     }
 
     fn view(&self) -> Element<Message> {
-        Self::get_ui_information(self, self.buttons_pressed.clone()).into()
-    }
+        let buttons = Arc::new(Mutex::new(self.buttons_pressed.clone()));
+            Self::get_ui_information(self, buttons).into()
+        }
     
     fn update(&mut self, message: Message) { 
         match message { 
@@ -343,7 +344,7 @@ impl Program {
 
                         if let Some(note) = note {
                             self.buttons_pressed.insert(note, true);
-                            self.update(Message::Play(note));
+                            self.update(Message::Play(note, false));
                         }
                     },
                     _ => {}
@@ -406,7 +407,7 @@ impl Program {
                 Self::update_bpm(self, value);
             }
 
-            Message::Play(note) => {
+            Message::Play(note, gui) => {
                 if note == Note::None {
                     return;
                 }
