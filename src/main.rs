@@ -328,13 +328,13 @@ impl Program {
                             "w" => Some(Note::Csharp),
                             "s" => Some(Note::D),
                             "r" => Some(Note::Dsharp),
-                            "f" => Some(Note::E),
-                            "g" => Some(Note::F),
-                            "u" => Some(Note::Fsharp),
-                            "h" => Some(Note::G),
-                            "i" => Some(Note::Gsharp),
-                            "j" => Some(Note::A),
-                            "k" => Some(Note::B),
+                            "d" => Some(Note::E),
+                            "f" => Some(Note::F),
+                            "t" => Some(Note::Fsharp),
+                            "g" => Some(Note::G),
+                            "y" => Some(Note::Gsharp),
+                            "h" => Some(Note::A),
+                            "j" => Some(Note::B),
                             _ => None
                         };
 
@@ -355,13 +355,13 @@ impl Program {
                             "w" => Some(Note::Csharp),
                             "s" => Some(Note::D),
                             "r" => Some(Note::Dsharp),
-                            "f" => Some(Note::E),
-                            "g" => Some(Note::F),
-                            "u" => Some(Note::Fsharp),
-                            "h" => Some(Note::G),
-                            "i" => Some(Note::Gsharp),
-                            "j" => Some(Note::A),
-                            "k" => Some(Note::B),
+                            "d" => Some(Note::E),
+                            "f" => Some(Note::F),
+                            "t" => Some(Note::Fsharp),
+                            "g" => Some(Note::G),
+                            "y" => Some(Note::Gsharp),
+                            "h" => Some(Note::A),
+                            "j" => Some(Note::B),
                             _ => None
                         };
 
