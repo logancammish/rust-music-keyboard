@@ -1,6 +1,6 @@
 [package]
 name = "rust-music-keyboard"
-version = "0.1.9"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
@@ -11,7 +11,7 @@ rodio = "0.20.1"
 midly = "0.5.3"
 once_cell = {version="1.21.1"}
 strum_macros = "0.27.1"
-async-trait = "0.1.87" 
+async-trait = "0.1.88" 
 
 [[bin]]
 name = "KeyboardAppLCammish"

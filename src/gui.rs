@@ -61,15 +61,6 @@ impl Program {
     pub fn get_ui_information(&self, buttons_pressed: Arc<Mutex<HashMap<Note, bool>>>) -> iced::widget::Container<Message> {
         container(widget::column![
             widget::row!(
-                text("Octave:"),
-                slider(
-                    0.0..=7.0,
-                    self.octave,
-                    Message::OctaveChange
-                ),
-            ).spacing(10),
-
-            widget::row!(
                 text("Note Length"),
                 slider(
                     1.0..=5.0,
@@ -77,7 +68,7 @@ impl Program {
                     Message::NoteLengthChange
                 ),
                 text(format!("Length: {}", Self::get_note_length(self.note_length))),
-            ).spacing(10),
+            ).spacing(10).padding(5),
 
             widget::row!(
                 text("BPM"),
@@ -91,7 +82,7 @@ impl Program {
                     .on_input(Message::CustomBpmChange) 
                     .padding(2)
                     .width(Length::Fixed(50.0)),
-            ).spacing(10),
+            ).spacing(10).padding(5),
 
             widget::row!(
                 checkbox("Play major scale triads", self.play_chords)
@@ -101,7 +92,15 @@ impl Program {
                 checkbox("Play asynchronously", self.play_async)
                     .on_toggle(|_| Message::PlayAsync)
                     .spacing(10),
-            ).spacing(20),
+            ).spacing(20).padding(5),
+
+            Space::with_height(20), 
+
+            widget::row!(
+                text("Octave:"),
+                button("+").on_press(Message::OctaveChange((self.octave + 1.0).min(9.0))),
+                button("-").on_press(Message::OctaveChange((self.octave - 1.0).max(0.0))),
+            ).spacing(10).padding(5),
 
             Space::with_height(50), 
 
@@ -383,9 +382,9 @@ impl Program {
                     text(format!("Time recorded: {:.2}s",  self.time_elapsed)),
                 ).spacing(10) 
 
-            ].spacing(20),
+            ].spacing(20).padding(5),
 
-            Space::with_height(50), 
+            Space::with_height(20), 
 
             widget::column![
                 widget::row!( 
@@ -396,9 +395,9 @@ impl Program {
                         Message::Scale
                     ).width(Length::Fixed(150.0)),  
                 )
-            ],
+            ].spacing(20).padding(5),
 
-            Space::with_height(50), 
+            Space::with_height(20), 
 
             widget::column![   
                 widget::row!(
@@ -410,7 +409,7 @@ impl Program {
                     ),
                     text(format!("{}%",  self.volume)),
                 ).spacing(10),
-            ]
+            ].spacing(20).padding(5)
             
             ]
         ).into()
