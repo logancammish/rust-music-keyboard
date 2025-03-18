@@ -11,6 +11,11 @@ use rodio::{self, OutputStream, Sink, Source};
 use strum_macros::Display;
 use std::io::Read;
 use std::{thread, collections::HashMap, fs::File,  sync::{Arc, Mutex}, time::Duration};
+use iced::futures::{self, Stream};
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use futures::stream::StreamExt;
+use iced_native::subscription::Recipe;
 
 // playable trait to implement polymorphism
 // for structs RealNote and Chordf
@@ -223,6 +228,7 @@ enum Message {
     ToggleRecoring,
     NoteLengthChange(f32),
     VolumeChange(f32),
+    Tick
 }
 
 #[derive(Clone)]
@@ -302,9 +308,8 @@ impl Program {
     }
 
     fn view(&self) -> Element<Message> {
-        let buttons = Arc::new(Mutex::new(self.buttons_pressed.clone()));
-            Self::get_ui_information(self, buttons).into()
-        }
+        Self::get_ui_information(self, Arc::new(Mutex::new(self.buttons_pressed.clone()))).into()
+    }
     
     fn update(&mut self, message: Message) { 
         match message { 
@@ -314,6 +319,15 @@ impl Program {
 
             Message::VolumeChange(value) => {
                 self.volume = value;
+            }
+
+            Message::Tick => {
+                if self.is_recording {
+                    let now = std::time::Instant::now();
+                    self.time_elapsed = now.duration_since(*RECORDING_START_TIME.lock().unwrap().as_ref().unwrap()).as_secs_f32();
+                } else {
+                    self.time_elapsed = 0.0;
+                }
             }
 
             Message::Scale(note) => {
@@ -442,10 +456,37 @@ impl Program {
         }
     }
 
-    fn subscription(&self) -> Subscription<Message> {   
+    
+    fn subscription(&self) -> Subscription<Message> {
+        struct Timer;
+        impl<H: std::hash::Hasher, E> Recipe<H, E> for Timer {            
+            type Output = Message;
+            fn hash(&self, state: &mut H) {
+                use std::hash::Hash;
+                "timer".hash(state);
+            }
+
+            fn stream(self: Box<Self>, _: futures::stream::BoxStream<'static, E>) -> futures::stream::BoxStream<'static, Self::Output> {
+                futures::stream::unfold((), |_| async {
+                    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+                    Some((Message::Tick, ()))
+                }).boxed()
+            }
+        }
+
+        impl Stream for Timer {
+            type Item = Message;
+
+            fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+                cx.waker().wake_by_ref();
+                Poll::Ready(Some(Message::Tick))
+            }
+        }
+        
         Subscription::batch(vec![
             keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key))),
             keyboard::on_key_release(|key, _modifiers| Some(Message::KeyReleased(key))),
+            Subscription::run_with_id("timer", Timer)
         ])
     }
 }
