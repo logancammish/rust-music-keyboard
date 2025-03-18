@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 // use other files inside this project
 mod gui;
 mod chord;
@@ -6,16 +6,11 @@ mod midi;
 
 // use dependencies     
 use iced::{keyboard::{self}, Element, Size, Subscription, Theme};
-use iced_native::subscription::Recipe;
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, Sink, Source};
 use strum_macros::Display;
 use std::io::Read;
 use std::{thread, collections::HashMap, fs::File,  sync::{Arc, Mutex}, time::Duration};
-use iced::futures::{self, Stream};
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use futures::stream::StreamExt;
 
 // playable trait to implement polymorphism
 // for structs RealNote and Chordf
@@ -213,23 +208,24 @@ fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool, volume: f32
 }
 
 // Message enum 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum Message { 
     Scale(Note), 
     OctaveChange(f32),
     BpmChange(f32),
     CustomBpmChange(String),
     Play(Note, bool), // True if played with gui
+    EndPlaying(Note),
     KeyPressed(iced::keyboard::Key),
     KeyReleased(iced::keyboard::Key),
     PlayChords,
     PlayAsync,
     ToggleRecoring,
-    Tick, 
     NoteLengthChange(f32),
-    VolumeChange(f32)
+    VolumeChange(f32),
 }
 
+#[derive(Clone)]
 // Program struct, which stores the current information the program may need
 // fields:
 // 1. octave        -> The current octave the program is using
@@ -343,7 +339,7 @@ impl Program {
                         };
 
                         if let Some(note) = note {
-                            self.buttons_pressed.insert(note, true);
+                            self.buttons_pressed.insert(note, true); // Update pressed state
                             self.update(Message::Play(note, false));
                         }
                     },
@@ -351,6 +347,7 @@ impl Program {
                 }
             },
             Message::KeyReleased(key) => {
+                println!("keyreleased: {:?}", key);
                 match key {
                     keyboard::Key::Character(c) => {
                         let note = match c.as_str() {
@@ -369,7 +366,7 @@ impl Program {
                         };
 
                         if let Some(note) = note {
-                            self.buttons_pressed.insert(note, false);
+                            self.buttons_pressed.insert(note, false); // Update pressed state
                         }
                     },
                     _ => {}
@@ -407,7 +404,13 @@ impl Program {
                 Self::update_bpm(self, value);
             }
 
-            Message::Play(note, gui) => {
+            Message::EndPlaying(note) => {
+                self.buttons_pressed.insert(note, false); // Update pressed state
+            }
+
+            Message::Play(note, _gui) => {
+                self.buttons_pressed.insert(note, true); // Update pressed state
+
                 if note == Note::None {
                     return;
                 }
@@ -436,47 +439,13 @@ impl Program {
                     real_note.play_async(self.bpm, self.is_recording, self.volume);
                 }
             }
-            Message::Tick => {
-                if self.is_recording {
-                    let now = std::time::Instant::now();
-                    self.time_elapsed = now.duration_since(*RECORDING_START_TIME.lock().unwrap().as_ref().unwrap()).as_secs_f32();
-                } else {
-                    self.time_elapsed = 0.0;
-                }
-            }
         }
     }
 
-    fn subscription(&self) -> Subscription<Message> {
-        struct Timer;
-        impl<H: std::hash::Hasher, E> Recipe<H, E> for Timer {            
-            type Output = Message;
-            fn hash(&self, state: &mut H) {
-                use std::hash::Hash;
-                "timer".hash(state);
-            }
-
-            fn stream(self: Box<Self>, _: futures::stream::BoxStream<'static, E>) -> futures::stream::BoxStream<'static, Self::Output> {
-                futures::stream::unfold((), |_| async {
-                    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
-                    Some((Message::Tick, ()))
-                }).boxed()
-            }
-        }
-
-        impl Stream for Timer {
-            type Item = Message;
-
-            fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-                cx.waker().wake_by_ref();
-                Poll::Ready(Some(Message::Tick))
-            }
-        }
-
+    fn subscription(&self) -> Subscription<Message> {   
         Subscription::batch(vec![
             keyboard::on_key_press(|key, _modifiers| Some(Message::KeyPressed(key))),
             keyboard::on_key_release(|key, _modifiers| Some(Message::KeyReleased(key))),
-            Subscription::run_with_id("timer", Timer)
         ])
     }
 }

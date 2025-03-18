@@ -3326,7 +3326,6 @@ name = "rust-music-keyboard"
 version = "0.1.8"
 dependencies = [
  "async-trait",
- "futures",
  "iced",
  "iced_native",
  "image",
