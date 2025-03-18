@@ -2,7 +2,7 @@
 
 [![build](https://github.com/logancammish/rust-music-keyboard/actions/workflows/rust.yml/badge.svg)](https://github.com/logancammish/rust-music-keyboard/actions/workflows/rust.yml)
 
-Simple musical keyboard made in Rust
+This is a simple GUI musical keyboard application made in Rust with MIDI export functionality. 
 
 
 If you want more up-to-date but unstable functionality, compile the preproduction branch.
@@ -31,7 +31,11 @@ This application officially supports Windows, and should work fine on Linux.
 
 Alternatively, windows users may download the latest binary (if available) [here](https://github.com/logancammish/rust-music-keyboard/releases/latest).
 
-### Use as a Rust crate
+### Use as a Rust crate and versioning
 
-This application is not intended for production use or use inside of a Rust crate; but it should work (suppose you need the `Song` struct, or other functionality).
+This application is not intended for production use or use inside of a Rust crate.
+
+Versioning format used: `(MAJOR).(MINOR).(MINOR/PATCH)-(STATE)`
+
+In most cases, there may be no state.
 
