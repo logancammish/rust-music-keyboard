@@ -135,7 +135,7 @@ impl RealNote {
         }
         sink.append(source);
         sink.play(); 
-        sink.set_volume(volume / 20.0);
+        sink.set_volume(volume / 10.0);
         sink.sleep_until_end();
     }
 
