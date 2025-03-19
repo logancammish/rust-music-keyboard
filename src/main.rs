@@ -23,7 +23,8 @@ trait Playable {
     fn play(&self, bpm: f32, is_recording: bool, volume: f32);
 }
 
-
+// Mutually exclusive, thread-safe static variables for storing important 
+// information which needs to be used throughout the program
 static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(HashMap::new()))
 });
@@ -234,12 +235,17 @@ enum Message {
 #[derive(Clone)]
 // Program struct, which stores the current information the program may need
 // fields:
-// 1. octave        -> The current octave the program is using
-// 2. bpm           -> The current beats per minute the program is using
-// 3. custom_bpm    -> String representation of the bpm, required for iced
-// 4. play_chords   -> Whether or not the play triad button is selected
-// 5. play_async    -> Whether or not to play notes asynchronously 
-// 6. is_recording  -> Whether or not the program is currently recording
+// 1. octave           -> The current octave the program is using
+// 2. bpm              -> The current beats per minute the program is using
+// 3. custom_bpm       -> String representation of the bpm, required for iced
+// 4. play_chords      -> Whether or not the play triad button is selected
+// 5. play_async       -> Whether or not to play notes asynchronously 
+// 6. is_recording     -> Whether or not the program is currently recording
+// 7. selected_scale   -> The scale that the program is currently using
+// 8. time_elapsed     -> The time elapsed since recording started
+// 9. note_length      -> The length of the note
+// 10. volume          -> The volume of the note
+// 11. buttons_pressed -> The buttons that are currently pressed
 struct Program { 
     octave: f32,
     bpm: f32,
@@ -262,6 +268,8 @@ struct Program {
 // 4. subscription    -> sets the iced subscription
 // 5. start_recording -> begin recording midi file
 // 6. stop_recording  -> stop recording midi
+// 7. get_note_length -> get the NoteLength from a float
+// 8. match_keyboard_key -> match the keyboard key to a Note
 impl Program { 
     pub fn get_note_length(length: f32) -> NoteLength { 
         return match length {

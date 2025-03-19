@@ -6,6 +6,11 @@ use crate::{Note, Song};
 
 pub struct Midi {}
 
+// impliment for Midi
+// functions: 
+// 1. note_to_midi  -> converts note to u7 midi value
+// 2. bpm_to_microseconds_per_beat  -> converts bpm to u24 microseconds per beat
+// 3. midi_file_create -> creates a midi file with the valid info
 impl Midi {
     pub fn note_to_midi(note: Note, octave: f32) -> u7 {
         let note_index = match note {

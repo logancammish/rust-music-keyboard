@@ -1,11 +1,9 @@
 use iced::{alignment, border::Radius, font::Weight, widget::{self, MouseArea, button, checkbox, container, pick_list, slider, text, text_input, Space}, Border, Color, Font, Length, Theme};
 use crate::{Message, Note, Program, Chord};
 use std::{collections::HashMap, sync::{Arc, Mutex}};
-
 use std::string::ToString;
 
-
-
+// allows Note to be converted to String
 impl ToString for Note {
     fn to_string(&self) -> String {
         match self {
