@@ -310,6 +310,28 @@ impl Program {
     fn view(&self) -> Element<Message> {
         Self::get_ui_information(self, Arc::new(Mutex::new(self.buttons_pressed.clone()))).into()
     }
+
+    fn match_keyboard_key(key: keyboard::Key) -> Option<Note> {
+        match key {
+            keyboard::Key::Character(c) => {
+                return match c.as_str() {
+                    "a" => Some(Note::C),
+                    "w" => Some(Note::Csharp),
+                    "s" => Some(Note::D),
+                    "r" => Some(Note::Dsharp),
+                    "d" => Some(Note::E),
+                    "f" => Some(Note::F),
+                    "t" => Some(Note::Fsharp),
+                    "g" => Some(Note::G),
+                    "y" => Some(Note::Gsharp),
+                    "h" => Some(Note::A),
+                    "j" => Some(Note::B),
+                    _ => None
+                };
+            },
+            _ => {None}
+        }
+    }
     
     fn update(&mut self, message: Message) { 
         match message { 
@@ -335,57 +357,22 @@ impl Program {
             }
 
             Message::KeyPressed(key) => {
-                match key {
-                    keyboard::Key::Character(c) => {
-                        let note = match c.as_str() {
-                            "a" => Some(Note::C),
-                            "w" => Some(Note::Csharp),
-                            "s" => Some(Note::D),
-                            "r" => Some(Note::Dsharp),
-                            "d" => Some(Note::E),
-                            "f" => Some(Note::F),
-                            "t" => Some(Note::Fsharp),
-                            "g" => Some(Note::G),
-                            "y" => Some(Note::Gsharp),
-                            "h" => Some(Note::A),
-                            "j" => Some(Note::B),
-                            _ => None
-                        };
+                let note = Self::match_keyboard_key(key);
 
-                        if let Some(note) = note {
-                            self.buttons_pressed.insert(note, true); // Update pressed state
-                            self.update(Message::Play(note, false));
-                        }
-                    },
-                    _ => {}
+                if let Some(note) = note {
+                    self.buttons_pressed.insert(note, true); 
+                    self.update(Message::Play(note, false));
                 }
             },
+
             Message::KeyReleased(key) => {
-                println!("keyreleased: {:?}", key);
-                match key {
-                    keyboard::Key::Character(c) => {
-                        let note = match c.as_str() {
-                            "a" => Some(Note::C),
-                            "w" => Some(Note::Csharp),
-                            "s" => Some(Note::D),
-                            "r" => Some(Note::Dsharp),
-                            "d" => Some(Note::E),
-                            "f" => Some(Note::F),
-                            "t" => Some(Note::Fsharp),
-                            "g" => Some(Note::G),
-                            "y" => Some(Note::Gsharp),
-                            "h" => Some(Note::A),
-                            "j" => Some(Note::B),
-                            _ => None
-                        };
-
-                        if let Some(note) = note {
-                            self.buttons_pressed.insert(note, false); // Update pressed state
-                        }
-                    },
-                    _ => {}
+                let note = Self::match_keyboard_key(key);
+                
+                if let Some(note) = note {
+                    self.buttons_pressed.insert(note, false); 
                 }
             },
+
             Message::ToggleRecoring => {
                 if self.is_recording == false{
                     self.start_recording();

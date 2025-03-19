@@ -59,6 +59,11 @@ impl Program {
     }
 
     pub fn get_ui_information(&self, buttons_pressed: Arc<Mutex<HashMap<Note, bool>>>) -> iced::widget::Container<Message> {
+        let accidental_height = 132.6;
+        let accidental_width = 63.75;
+        let natural_height = 255.0;
+        let natural_width = 85.0;
+
         container(widget::column![
             widget::row!(
                 text("Note Length"),
@@ -122,12 +127,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::C), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::C, true))
-                    .on_release(Message::EndPlaying(Note::C)),
+                    .on_release(Message::EndPlaying(Note::C))
+                    .on_exit(Message::EndPlaying(Note::C)),
 
                     MouseArea::new(
                         button(text(format!("D{}", self.octave))
@@ -143,12 +149,14 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::D), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::D, true))
-                    .on_release(Message::EndPlaying(Note::D)),
+                    .on_release(Message::EndPlaying(Note::D))
+                    .on_exit(Message::EndPlaying(Note::D)),
+
 
                     MouseArea::new(
                         button(text(format!("E{}", self.octave))
@@ -164,12 +172,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::E), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::E, true))
-                    .on_release(Message::EndPlaying(Note::E)),
+                    .on_release(Message::EndPlaying(Note::E))
+                    .on_exit(Message::EndPlaying(Note::E)),
 
                     MouseArea::new(
                         button(text(format!("F{}", self.octave))
@@ -185,12 +194,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::F), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::F, true))
-                    .on_release(Message::EndPlaying(Note::F)),
+                    .on_release(Message::EndPlaying(Note::F))
+                    .on_exit(Message::EndPlaying(Note::F)),
 
                     MouseArea::new(
                         button(text(format!("G{}", self.octave))
@@ -206,12 +216,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::G), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::G, true))
-                    .on_release(Message::EndPlaying(Note::G)),
+                    .on_release(Message::EndPlaying(Note::G))
+                    .on_exit(Message::EndPlaying(Note::G)),
 
                     MouseArea::new(
                         button(text(format!("A{}", self.octave))
@@ -227,12 +238,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::A), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::A, true))
-                    .on_release(Message::EndPlaying(Note::A)),
+                    .on_release(Message::EndPlaying(Note::A))
+                    .on_exit(Message::EndPlaying(Note::A)),
 
                     MouseArea::new(
                         button(text(format!("B{}", self.octave))
@@ -248,12 +260,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::B), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(85.0))
-                        .height(Length::Fixed(255.0))
+                        .width(Length::Fixed(natural_width))
+                        .height(Length::Fixed(natural_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::B, true))
-                    .on_release(Message::EndPlaying(Note::B)),
+                    .on_release(Message::EndPlaying(Note::B))
+                    .on_exit(Message::EndPlaying(Note::B)),
                                 
                                 ).spacing(2).padding(5),
             
@@ -273,12 +286,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Csharp), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(63.75))
-                        .height(Length::Fixed(132.6))
+                        .width(Length::Fixed(accidental_width))
+                        .height(Length::Fixed(accidental_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::Csharp, true))
-                    .on_release(Message::EndPlaying(Note::Csharp)),
+                    .on_release(Message::EndPlaying(Note::Csharp))
+                    .on_exit(Message::EndPlaying(Note::Csharp)),
 
                     Space::with_width(34.0),
                     MouseArea::new(
@@ -295,12 +309,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Dsharp), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(63.75))
-                        .height(Length::Fixed(132.6))
+                        .width(Length::Fixed(accidental_width))
+                        .height(Length::Fixed(accidental_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::Dsharp, true))
-                    .on_release(Message::EndPlaying(Note::Dsharp)),
+                    .on_release(Message::EndPlaying(Note::Dsharp))
+                    .on_exit(Message::EndPlaying(Note::Dsharp)),
 
                     Space::with_width(93.5),
                     MouseArea::new(
@@ -317,12 +332,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Fsharp), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(63.75))
-                        .height(Length::Fixed(132.6))
+                        .width(Length::Fixed(accidental_width))
+                        .height(Length::Fixed(accidental_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::Fsharp, true))
-                    .on_release(Message::EndPlaying(Note::Fsharp)),
+                    .on_release(Message::EndPlaying(Note::Fsharp))
+                    .on_exit(Message::EndPlaying(Note::Fsharp)),
 
                     Space::with_width(34.0),
                     MouseArea::new(
@@ -339,12 +355,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Gsharp), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(63.75))
-                        .height(Length::Fixed(132.6))
+                        .width(Length::Fixed(accidental_width))
+                        .height(Length::Fixed(accidental_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::Gsharp, true))
-                    .on_release(Message::EndPlaying(Note::Gsharp)),
+                    .on_release(Message::EndPlaying(Note::Gsharp))
+                    .on_exit(Message::EndPlaying(Note::Gsharp)),
 
                     Space::with_width(34.0),
                     MouseArea::new(
@@ -361,12 +378,13 @@ impl Program {
                                 Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Asharp), is_pressed)
                             }
                         })
-                        .width(Length::Fixed(63.75))
-                        .height(Length::Fixed(132.6))
+                        .width(Length::Fixed(accidental_width))
+                        .height(Length::Fixed(accidental_height))
                         .padding(5)
                     )
                     .on_press(Message::Play(Note::Asharp, true))
-                    .on_release(Message::EndPlaying(Note::Asharp)),
+                    .on_release(Message::EndPlaying(Note::Asharp))
+                    .on_exit(Message::EndPlaying(Note::Asharp)),
                 ).spacing(0),
             ),
 
