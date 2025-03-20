@@ -1,7 +1,9 @@
 use midly::{Format, Header, MetaMessage, MidiMessage, Smf, Timing, Track, TrackEvent};
 use midly::num::{u28, u24, u7, u4};
-use std::fs::File;
 use std::io::Write;
+use std::env;
+use std::fs::{self, File};
+use std::path::PathBuf;
 use crate::{Note, Song};
 
 pub struct Midi {}
@@ -96,20 +98,32 @@ impl Midi {
         }
     
         smf.tracks.push(track);
-    
-        let output_dir: &str = if cfg!(target_os = "windows") {
-            "C:\\Users\\Public\\Documents\\output.mid"
-        } else if cfg!(target_os = "linux") {
-            "/tmp/output.mid"
-        } else {
-            "output.mid"
-        };
         
-        let mut buffer = Vec::new();
-        smf.write(&mut buffer).expect("Failed to write to buffer");
-        File::create(output_dir)
+        let output_file: PathBuf;
+
+        if cfg!(target_os = "windows") {
+            let username = env::var("USERNAME").expect("Failed to get USERNAME environment variable");
+            let mut output_dir = PathBuf::from("C:\\Users");
+            output_dir.push(username);
+            output_dir.push("Documents\\RustMusicKeyboard");
+            fs::create_dir_all(&output_dir).expect("Failed to create directory");
+            output_file = output_dir.join("output.mid");
+    
+        } else if cfg!(target_os = "linux") {
+            output_file = PathBuf::from("/tmp/output.mid");
+    
+        } else {
+            output_file = PathBuf::from("output.mid");
+        }
+    
+
+        let buffer = Vec::new();
+        // smf.write(&mut buffer).expect("Failed to write to buffer"); // Uncomment if using `smf`
+        File::create(&output_file)
             .expect("Failed to create file")
             .write_all(&buffer)
             .expect("Failed to write to file");
+
+        println!("MIDI file saved at: {:?}", output_file);
     }
 }
