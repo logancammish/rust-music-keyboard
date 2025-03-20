@@ -39,3 +39,10 @@ Versioning format used: `(MAJOR).(MINOR).(MINOR/PATCH)-(STATE)`
 
 In most cases, there may be no state.
 
+### MIDI file location
+
+Windows: C:\Users\USERNAME\Documents\RustMusicKeyboard\output.mid
+
+Linux: /tmp/output.mid
+
+Other: ./output.mid
