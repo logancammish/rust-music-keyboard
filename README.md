@@ -29,7 +29,7 @@ This application officially supports Windows, and should work fine on Linux.
 3. Build with `cargo build --release`
 4. You will find the executable in `target/release`
 
-Alternatively, windows users may download the latest binary (if available) [here](https://github.com/logancammish/rust-music-keyboard/releases/latest).
+Alternatively, windows users may download the latest binary (if available) [here](https://github.com/logancammish/rust-music-keyboard/releases/latest). Windows installer can be found directly [here](https://github.com/logancammish/rust-music-keyboard/releases/download/0.2.2/KeyboardAppLCammish_Installer-Windows-x86_64.exe).
 
 ### Use as a Rust crate and versioning
 
