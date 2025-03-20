@@ -4,7 +4,7 @@ AppVersion=0.2.2
 DefaultDirName={pf}\KeyboardAppLCammish
 DefaultGroupName=KeyboardAppLCammish
 OutputDir=.
-OutputBaseFilename=KeyboardAppLCammish_Installer
+OutputBaseFilename=KeyboardAppLCammish_Installer-Windows-x86_64
 Compression=lzma
 SolidCompression=yes
 
