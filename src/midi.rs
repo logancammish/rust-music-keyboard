@@ -97,9 +97,17 @@ impl Midi {
     
         smf.tracks.push(track);
     
+        let output_dir: &str = if cfg!(target_os = "windows") {
+            "C:\\Users\\Public\\Documents\\output.mid"
+        } else if cfg!(target_os = "linux") {
+            "/tmp/output.mid"
+        } else {
+            "output.mid"
+        };
+        
         let mut buffer = Vec::new();
         smf.write(&mut buffer).expect("Failed to write to buffer");
-        File::create("output.mid")
+        File::create(output_dir)
             .expect("Failed to create file")
             .write_all(&buffer)
             .expect("Failed to write to file");
