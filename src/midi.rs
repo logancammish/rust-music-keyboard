@@ -118,7 +118,6 @@ impl Midi {
     
 
         let buffer = Vec::new();
-        // smf.write(&mut buffer).expect("Failed to write to buffer"); // Uncomment if using `smf`
         File::create(&output_file)
             .expect("Failed to create file")
             .write_all(&buffer)
