@@ -107,285 +107,296 @@ impl Program {
 
             Space::with_height(50), 
 
-
-            widget::stack!(
-                widget::row!(
-                    MouseArea::new(
-                        button(text(format!("C{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::C).unwrap_or(&false);
-                            
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::C), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::C, true))
-                    .on_release(Message::EndPlaying(Note::C))
-                    .on_exit(Message::EndPlaying(Note::C)),
-
-                    MouseArea::new(
-                        button(text(format!("D{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({                            
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::D).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::D), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::D, true))
-                    .on_release(Message::EndPlaying(Note::D))
-                    .on_exit(Message::EndPlaying(Note::D)),
-
-
-                    MouseArea::new(
-                        button(text(format!("E{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::E).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::E), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::E, true))
-                    .on_release(Message::EndPlaying(Note::E))
-                    .on_exit(Message::EndPlaying(Note::E)),
-
-                    MouseArea::new(
-                        button(text(format!("F{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::F).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::F), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::F, true))
-                    .on_release(Message::EndPlaying(Note::F))
-                    .on_exit(Message::EndPlaying(Note::F)),
-
-                    MouseArea::new(
-                        button(text(format!("G{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::G).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::G), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::G, true))
-                    .on_release(Message::EndPlaying(Note::G))
-                    .on_exit(Message::EndPlaying(Note::G)),
-
-                    MouseArea::new(
-                        button(text(format!("A{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::A).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::A), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::A, true))
-                    .on_release(Message::EndPlaying(Note::A))
-                    .on_exit(Message::EndPlaying(Note::A)),
-
-                    MouseArea::new(
-                        button(text(format!("B{}", self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::B).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::B), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(natural_width))
-                        .height(Length::Fixed(natural_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::B, true))
-                    .on_release(Message::EndPlaying(Note::B))
-                    .on_exit(Message::EndPlaying(Note::B)),
+            widget::row!(
+                widget::stack!(
+                    widget::row!(
+                        MouseArea::new(
+                            button(text(format!("C{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::C).unwrap_or(&false);
                                 
-                                ).spacing(2).padding(5),
-            
-                widget::row!(
-                    Space::with_width(59.5),
-                    MouseArea::new(
-                        button(text(format!("Db{}\nC#{}", self.octave, self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::C), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
                         )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::Csharp).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Csharp), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(accidental_width))
-                        .height(Length::Fixed(accidental_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::Csharp, true))
-                    .on_release(Message::EndPlaying(Note::Csharp))
-                    .on_exit(Message::EndPlaying(Note::Csharp)),
+                        .on_press(Message::Play(Note::C, true))
+                        .on_release(Message::EndPlaying(Note::C))
+                        .on_exit(Message::EndPlaying(Note::C)),
 
-                    Space::with_width(34.0),
-                    MouseArea::new(
-                        button(text(format!("Eb{}\nD#{}", self.octave, self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
+                        MouseArea::new(
+                            button(text(format!("D{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({                            
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::D).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::D), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
                         )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::Dsharp).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Dsharp), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(accidental_width))
-                        .height(Length::Fixed(accidental_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::Dsharp, true))
-                    .on_release(Message::EndPlaying(Note::Dsharp))
-                    .on_exit(Message::EndPlaying(Note::Dsharp)),
+                        .on_press(Message::Play(Note::D, true))
+                        .on_release(Message::EndPlaying(Note::D))
+                        .on_exit(Message::EndPlaying(Note::D)),
 
-                    Space::with_width(93.5),
-                    MouseArea::new(
-                        button(text(format!("Gb{}\nF#{}", self.octave, self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
-                        )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::Fsharp).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Fsharp), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(accidental_width))
-                        .height(Length::Fixed(accidental_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::Fsharp, true))
-                    .on_release(Message::EndPlaying(Note::Fsharp))
-                    .on_exit(Message::EndPlaying(Note::Fsharp)),
 
-                    Space::with_width(34.0),
-                    MouseArea::new(
-                        button(text(format!("Ab{}\nG#{}", self.octave, self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
+                        MouseArea::new(
+                            button(text(format!("E{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::E).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::E), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
                         )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::Gsharp).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Gsharp), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(accidental_width))
-                        .height(Length::Fixed(accidental_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::Gsharp, true))
-                    .on_release(Message::EndPlaying(Note::Gsharp))
-                    .on_exit(Message::EndPlaying(Note::Gsharp)),
+                        .on_press(Message::Play(Note::E, true))
+                        .on_release(Message::EndPlaying(Note::E))
+                        .on_exit(Message::EndPlaying(Note::E)),
 
-                    Space::with_width(34.0),
-                    MouseArea::new(
-                        button(text(format!("Bb{}\nA#{}", self.octave, self.octave))
-                            .size(24)
-                            .align_x(alignment::Horizontal::Center)
-                            .align_y(alignment::Vertical::Bottom)
-                            .font(Font { weight: Weight::Bold, ..Default::default() })
+                        MouseArea::new(
+                            button(text(format!("F{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::F).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::F), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
                         )
-                        .style({
-                            let buttons = buttons_pressed.clone();
-                            move |theme, status| {
-                                let is_pressed = *buttons.lock().unwrap().get(&Note::Asharp).unwrap_or(&false);
-                                Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Asharp), is_pressed)
-                            }
-                        })
-                        .width(Length::Fixed(accidental_width))
-                        .height(Length::Fixed(accidental_height))
-                        .padding(5)
-                    )
-                    .on_press(Message::Play(Note::Asharp, true))
-                    .on_release(Message::EndPlaying(Note::Asharp))
-                    .on_exit(Message::EndPlaying(Note::Asharp)),
-                ).spacing(0),
+                        .on_press(Message::Play(Note::F, true))
+                        .on_release(Message::EndPlaying(Note::F))
+                        .on_exit(Message::EndPlaying(Note::F)),
+
+                        MouseArea::new(
+                            button(text(format!("G{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::G).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::G), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::G, true))
+                        .on_release(Message::EndPlaying(Note::G))
+                        .on_exit(Message::EndPlaying(Note::G)),
+
+                        MouseArea::new(
+                            button(text(format!("A{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::A).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::A), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::A, true))
+                        .on_release(Message::EndPlaying(Note::A))
+                        .on_exit(Message::EndPlaying(Note::A)),
+
+                        MouseArea::new(
+                            button(text(format!("B{}", self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::B).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::B), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(natural_width))
+                            .height(Length::Fixed(natural_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::B, true))
+                        .on_release(Message::EndPlaying(Note::B))
+                        .on_exit(Message::EndPlaying(Note::B)),
+                                    
+                                    ).spacing(2).padding(5),
+                
+                    widget::row!(
+                        Space::with_width(59.5),
+                        MouseArea::new(
+                            button(text(format!("Db{}\nC#{}", self.octave, self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::Csharp).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Csharp), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(accidental_width))
+                            .height(Length::Fixed(accidental_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::Csharp, true))
+                        .on_release(Message::EndPlaying(Note::Csharp))
+                        .on_exit(Message::EndPlaying(Note::Csharp)),
+
+                        Space::with_width(34.0),
+                        MouseArea::new(
+                            button(text(format!("Eb{}\nD#{}", self.octave, self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::Dsharp).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Dsharp), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(accidental_width))
+                            .height(Length::Fixed(accidental_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::Dsharp, true))
+                        .on_release(Message::EndPlaying(Note::Dsharp))
+                        .on_exit(Message::EndPlaying(Note::Dsharp)),
+
+                        Space::with_width(93.5),
+                        MouseArea::new(
+                            button(text(format!("Gb{}\nF#{}", self.octave, self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::Fsharp).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Fsharp), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(accidental_width))
+                            .height(Length::Fixed(accidental_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::Fsharp, true))
+                        .on_release(Message::EndPlaying(Note::Fsharp))
+                        .on_exit(Message::EndPlaying(Note::Fsharp)),
+
+                        Space::with_width(34.0),
+                        MouseArea::new(
+                            button(text(format!("Ab{}\nG#{}", self.octave, self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::Gsharp).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Gsharp), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(accidental_width))
+                            .height(Length::Fixed(accidental_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::Gsharp, true))
+                        .on_release(Message::EndPlaying(Note::Gsharp))
+                        .on_exit(Message::EndPlaying(Note::Gsharp)),
+
+                        Space::with_width(34.0),
+                        MouseArea::new(
+                            button(text(format!("Bb{}\nA#{}", self.octave, self.octave))
+                                .size(24)
+                                .align_x(alignment::Horizontal::Center)
+                                .align_y(alignment::Vertical::Bottom)
+                                .font(Font { weight: Weight::Bold, ..Default::default() })
+                            )
+                            .style({
+                                let buttons = buttons_pressed.clone();
+                                move |theme, status| {
+                                    let is_pressed = *buttons.lock().unwrap().get(&Note::Asharp).unwrap_or(&false);
+                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Asharp), is_pressed)
+                                }
+                            })
+                            .width(Length::Fixed(accidental_width))
+                            .height(Length::Fixed(accidental_height))
+                            .padding(5)
+                        )
+                        .on_press(Message::Play(Note::Asharp, true))
+                        .on_release(Message::EndPlaying(Note::Asharp))
+                        .on_exit(Message::EndPlaying(Note::Asharp)),
+                    ).spacing(0),
+                ),
+                Space::with_width(10), 
+                widget::column! [ 
+                    text("How do I use this?")
+                        .width(Length::Fill)
+                        .align_x(alignment::Horizontal::Center)
+                        .size(28),
+                    text("1. Selecting your Note Length, this can be any value from Whole to Sixteenth\n2. Selecting your BPM, or the amount of beats per minute, this can be any value from 1 to 300\n3. Play notes; you can either press the note on the screen or use the keyboard keys to control it\n4. (optional) Record; you can press the record button to export the music as a midi file")
+                        .width(Length::Fill)
+                        .align_x(alignment::Horizontal::Center)
+                        .size(16),
+                ]
             ),
-
             Space::with_height(50), 
 
             widget::column![

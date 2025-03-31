@@ -68,7 +68,7 @@ impl NoteLength {
         }
     }
     pub fn check_bpm(bpm: f32) -> bool { 
-        if (bpm <= 0.0) || (bpm > 300.0) {
+        if (bpm <= 0.1) || (bpm > 300.0) {
             return false
         }
 
