@@ -101,7 +101,7 @@ impl Program {
 
             widget::row!(
                 text("Octave:"),
-                button("+").on_press(Message::OctaveChange((self.octave + 1.0).min(9.0))),
+                button("+").on_press(Message::OctaveChange((self.octave + 1.0).min(6.0))),
                 button("-").on_press(Message::OctaveChange((self.octave - 1.0).max(0.0))),
             ).spacing(10).padding(5),
 
