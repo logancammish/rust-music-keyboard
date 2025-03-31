@@ -334,7 +334,7 @@ impl Program {
                     "y" => Some(Note::Gsharp),
                     "h" => Some(Note::A),
                     "j" => Some(Note::B),
-                    "u" => Some(Note::ASharp),
+                    "u" => Some(Note::Asharp),
                     _ => None
                 };
             },
