@@ -334,6 +334,7 @@ impl Program {
                     "y" => Some(Note::Gsharp),
                     "h" => Some(Note::A),
                     "j" => Some(Note::B),
+                    "u" => Some(Note::ASharp),
                     _ => None
                 };
             },
@@ -568,6 +569,6 @@ pub fn main() -> iced::Result {
         .window_size(Size::new(700.0, 720.0))
         .subscription(Program::subscription)
         .theme(|_| Theme::TokyoNight)
-        .window(window_settings)
+    .window(window_settings)
         .run()
 }
