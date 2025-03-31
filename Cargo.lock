@@ -3361,7 +3361,7 @@ dependencies = [
 
 [[package]]
 name = "rust-music-keyboard"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "async-trait",
  "dirs 6.0.0",
