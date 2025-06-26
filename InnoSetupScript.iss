@@ -1,6 +1,6 @@
 [Setup]
 AppName=KeyboardAppLCammish
-AppVersion=0.2.5
+AppVersion=0.3.0
 DefaultDirName={pf}\KeyboardAppLCammish
 DefaultGroupName=KeyboardAppLCammish
 OutputDir=.
