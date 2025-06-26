@@ -48,14 +48,6 @@ impl Program {
         }
     }
 
-
-    fn is_note_in_scale(&self, note: Note) -> bool {
-        match &self.selected_scale {
-            None => true,
-            Some(scale_root) => Chord::get_major_scale(*scale_root).contains(&note)
-        }
-    }
-
     pub fn get_ui_information(&self, buttons_pressed: Arc<Mutex<HashMap<Note, bool>>>) -> iced::widget::Container<Message> {
         let accidental_height = 132.6;
         let accidental_width = 63.75;
@@ -122,7 +114,7 @@ impl Program {
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::C).unwrap_or(&false);
                                 
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::C), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::C), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -144,7 +136,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::D).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::D), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::D), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -167,7 +159,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::E).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::E), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::E), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -189,7 +181,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::F).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::F), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::F), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -211,7 +203,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::G).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::G), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::G), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -233,7 +225,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::A).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::A), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::A), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -255,7 +247,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::B).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::WHITE, self.is_note_in_scale(Note::B), is_pressed)
+                                    Self::button_style(theme, status, Color::WHITE, Chord::is_note_in_scale(&self, Note::B), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(natural_width))
@@ -281,7 +273,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::Csharp).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Csharp), is_pressed)
+                                    Self::button_style(theme, status, Color::BLACK, Chord::is_note_in_scale(&self, Note::Csharp), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(accidental_width))
@@ -304,7 +296,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::Dsharp).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Dsharp), is_pressed)
+                                    Self::button_style(theme, status, Color::BLACK, Chord::is_note_in_scale(&self, Note::Dsharp), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(accidental_width))
@@ -327,7 +319,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::Fsharp).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Fsharp), is_pressed)
+                                    Self::button_style(theme, status, Color::BLACK, Chord::is_note_in_scale(&self, Note::Fsharp), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(accidental_width))
@@ -350,7 +342,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::Gsharp).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Gsharp), is_pressed)
+                                    Self::button_style(theme, status, Color::BLACK, Chord::is_note_in_scale(&self, Note::Gsharp), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(accidental_width))
@@ -373,7 +365,7 @@ impl Program {
                                 let buttons = buttons_pressed.clone();
                                 move |theme, status| {
                                     let is_pressed = *buttons.lock().unwrap().get(&Note::Asharp).unwrap_or(&false);
-                                    Self::button_style(theme, status, Color::BLACK, self.is_note_in_scale(Note::Asharp), is_pressed)
+                                    Self::button_style(theme, status, Color::BLACK, Chord::is_note_in_scale(&self, Note::Asharp), is_pressed)
                                 }
                             })
                             .width(Length::Fixed(accidental_width))
