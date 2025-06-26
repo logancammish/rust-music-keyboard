@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use strum_macros::Display;
 use rodio::{self, OutputStream, Sink, Source};
-use crate::{Playable, async_play_note, record_history};
+use crate::{Program, Playable, async_play_note, record_history};
 
 
 // Note enum defines all notes in Western music
