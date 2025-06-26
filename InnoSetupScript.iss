@@ -1,6 +1,6 @@
 [Setup]
 AppName=KeyboardAppLCammish
-AppVersion=0.2.4
+AppVersion=0.2.5
 DefaultDirName={pf}\KeyboardAppLCammish
 DefaultGroupName=KeyboardAppLCammish
 OutputDir=.
@@ -9,8 +9,8 @@ Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "C:\Users\L.J.Cammish\OneDrive - Saint Kentigern\Documents\assessment - logan cammish\target\release\KeyboardAppLCammish.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\L.J.Cammish\OneDrive - Saint Kentigern\Documents\assessment - logan cammish\assets\*"; DestDir: "{app}\assets"; Flags: recursesubdirs createallsubdirs
+Source: "C:\Users\L.J.Cammish\OneDrive - Saint Kentigern\Documents\rust-music-keyboard\target\release\KeyboardAppLCammish.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\L.J.Cammish\OneDrive - Saint Kentigern\Documents\rust-music-keyboard\assets\*"; DestDir: "{app}\assets"; Flags: recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\KeyboardAppLCammish"; Filename: "{app}\KeyboardAppLCammish.exe"
