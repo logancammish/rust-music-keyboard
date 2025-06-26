@@ -1,9 +1,10 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 // use other files inside this project
 mod gui;
 mod chord;
 mod midi;
 mod note;
+use gui::{*};
 use chord::{*};
 use note::{*};
 
@@ -12,13 +13,14 @@ use note::{*};
 use iced::{keyboard::{self}, Element, Size, Subscription, Theme};
 use once_cell::sync::Lazy;
 use rodio::{self, OutputStream, OutputStreamHandle, Sink, Source};
-use std::io::Read;
+use std::{fs, io::Read};
 use std::{thread, collections::HashMap, fs::File,  sync::{Arc, Mutex}, time::Duration};
 use iced::futures::{self, Stream};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use futures::stream::StreamExt;
 use iced_native::subscription::Recipe;
+use serde_json;
 
 #[derive(Clone)]
 struct SoundRequest {
@@ -100,6 +102,7 @@ enum Message {
     ToggleRecoring,
     NoteLengthChange(f32),
     VolumeChange(f32),
+    ToggleHelpGUI,
     Tick
 }
 
@@ -130,6 +133,7 @@ struct Program {
     volume: f32,
     buttons_pressed: HashMap<Note, bool>,
     sound_channel: Arc<Mutex<(std::sync::mpsc::Sender<SoundRequest>, std::sync::mpsc::Receiver<SoundRequest>)>>,
+    current_menu: CurrentMenu
 }
 
 // implement the Program struct
@@ -216,6 +220,14 @@ impl Program {
     
     fn update(&mut self, message: Message) { 
         match message { 
+            Message::ToggleHelpGUI => {
+                if self.current_menu == CurrentMenu::Help { 
+                    self.current_menu = CurrentMenu::Standard
+                } else {
+                    self.current_menu = CurrentMenu::Help
+                }
+            }
+
             Message::NoteLengthChange(value) => {
                 self.note_length = value;
             }
@@ -387,6 +399,30 @@ impl Default for Program {
             buttons_pressed.insert(*note, false);
         }
 
+        // Reading settings.json
+        let settings = match fs::read_to_string("./config/settings.json") {
+            Ok(dp) => dp, 
+            Err(_e) => {
+                println!("An error occured reading settings"); 
+                "[]".to_string()
+            }
+        };
+        let settings_hmap: HashMap<String, bool> = match serde_json::from_str(&settings) {
+            Ok(sp) => sp, 
+            Err(_e) => {
+                println!("An error occured reading settings (bad format)"); 
+                HashMap::from([
+                    ("info_popup".to_string(), false)
+                ])
+            }
+        };
+
+        let current_menu = if *settings_hmap.get("info_popup").unwrap_or(&false) {
+            CurrentMenu::Help
+        } else {
+            CurrentMenu::Standard
+        };
+
         Self {
             note_length: 2.0, 
             selected_scale: None,  
@@ -402,6 +438,7 @@ impl Default for Program {
             sound_channel: Arc::new(Mutex::new(
                 std::sync::mpsc::channel::<SoundRequest>()
             )),
+            current_menu: current_menu
         }
     }
 }

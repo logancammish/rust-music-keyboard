@@ -3,6 +3,11 @@ use crate::{Message, Note, Program, Chord};
 use std::{collections::HashMap, sync::{Arc, Mutex}};
 use std::string::ToString;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum CurrentMenu {
+    Standard, Help,
+}
+
 // allows Note to be converted to String
 impl ToString for Note {
     fn to_string(&self) -> String {
@@ -47,8 +52,38 @@ impl Program {
             ..button::Style::default()
         }
     }
+    
 
     pub fn get_ui_information(&self, buttons_pressed: Arc<Mutex<HashMap<Note, bool>>>) -> iced::widget::Container<Message> {
+        match self.current_menu { 
+            CurrentMenu::Standard => {
+                Self::standard_ui(&self, buttons_pressed)
+            },
+            CurrentMenu::Help => {
+                Self::help_ui(&self)
+            }
+        }
+    }
+
+    fn help_ui(&self) -> iced::widget::Container<Message> { 
+        container(widget::column![
+            text("How do I use this?")
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Center)
+                .size(50),
+            text("1. Selecting your Note Length, this can be any value from Whole to Sixteenth\n2. Selecting your BPM, or the amount of beats per minute, this can be any value from 1 to 300\n3. Play notes; you can either press the note on the screen or use the keyboard keys to control it\n4. (optional) Record; you can press the record button to export the music as a midi file")
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Center)
+                .size(30),
+            container(
+                button("I understand")
+                    .on_press(Message::ToggleHelpGUI)
+            )
+            .align_x(alignment::Horizontal::Center),
+        ].height(Length::Fill))
+    }
+
+    fn standard_ui(&self, buttons_pressed: Arc<Mutex<HashMap<Note, bool>>>) -> iced::widget::Container<Message> {
         let accidental_height = 132.6;
         let accidental_width = 63.75;
         let natural_height = 255.0;
@@ -377,17 +412,6 @@ impl Program {
                         .on_exit(Message::EndPlaying(Note::Asharp)),
                     ).spacing(0),
                 ),
-                Space::with_width(10), 
-                widget::column! [ 
-                    text("How do I use this?")
-                        .width(Length::Fill)
-                        .align_x(alignment::Horizontal::Center)
-                        .size(28),
-                    text("1. Selecting your Note Length, this can be any value from Whole to Sixteenth\n2. Selecting your BPM, or the amount of beats per minute, this can be any value from 1 to 300\n3. Play notes; you can either press the note on the screen or use the keyboard keys to control it\n4. (optional) Record; you can press the record button to export the music as a midi file")
-                        .width(Length::Fill)
-                        .align_x(alignment::Horizontal::Center)
-                        .size(16),
-                ]
             ),
             Space::with_height(50), 
 

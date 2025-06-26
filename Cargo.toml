@@ -16,6 +16,8 @@ tokio = { version = "1.45.1", features = ["full"] }
 futures = "0.3.31"
 dirs = "6.0.0"
 iced_native = "0.10.3"
+serde_json = "1.0.140" 
+
 
 [[bin]]
 name = "KeyboardAppLCammish"
