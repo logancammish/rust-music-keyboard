@@ -71,7 +71,7 @@ impl Program {
                 .width(Length::Fill)
                 .align_x(alignment::Horizontal::Center)
                 .size(50),
-            text("1. Selecting your Note Length, this can be any value from Whole to Sixteenth\n2. Selecting your BPM, or the amount of beats per minute, this can be any value from 1 to 300\n3. Play notes; you can either press the note on the screen or use the keyboard keys to control it\n4. (optional) Record; you can press the record button to export the music as a midi file")
+            text("1. Selecting your Note Length, this can be any value from Whole to Sixteenth\n2. Selecting your BPM, or the amount of beats per minute, this can be any value from 1 to 300\n3. Play notes; you can either press the note on the screen or use the keyboard keys to control it\n4. (optional) Record; you can press the record button to export the music as a midi file\n5. (option) Accessing your recorded file:\n Windows: C:\\Users\\USERNAME\\Documents\\RustMusicKeyboard\\output.mid\nLinux: /tmp/output.mid\nOther: ./output.mid")
                 .width(Length::Fill)
                 .align_x(alignment::Horizontal::Center)
                 .size(30),
