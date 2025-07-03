@@ -45,6 +45,9 @@ static RECORDED_NOTES: Lazy<Arc<Mutex<HashMap<Note, Vec<(f32, f32, f32)>>>>> = L
 static RECORDING_START_TIME: Lazy<Arc<Mutex<Option<std::time::Instant>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(None))
 });
+const THREAD_POOL: Lazy<Arc<Mutex<rayon::ThreadPool>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap()))
+});
 
 
 
@@ -69,9 +72,12 @@ pub fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool, volume:
         let note = note.clone();
         //THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording, sink));
 
-        thread::spawn(move || {
+        THREAD_POOL.lock().unwrap().spawn(move || {
             note.play(bpm, is_recording, volume);
         });
+        // thread::spawn(move || {
+        //     note.play(bpm, is_recording, volume);
+        // });
     }
 }
 

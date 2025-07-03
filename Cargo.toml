@@ -12,11 +12,12 @@ midly = "0.5.3"
 once_cell = {version="1.21.3"}
 strum_macros = "0.27.1"
 async-trait = "0.1.88" 
-tokio = { version = "1.45.1", features = ["full"] }
+tokio = { version = "1.46.0", features = ["full"] }
 futures = "0.3.31"
 dirs = "6.0.0"
 iced_native = "0.10.3"
 serde_json = "1.0.140" 
+rayon = "1.10.0"
 
 
 [[bin]]
