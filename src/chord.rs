@@ -1,3 +1,5 @@
+use rodio::OutputStreamHandle;
+
 // use other files inside this project
 use crate::{Program, Note, RealNote, Playable, async_play_note};
 
@@ -85,7 +87,7 @@ impl Chord {
 
 // implement Playable trait for Chord
 impl Playable for Chord { 
-    fn play(&self, bpm: f32, is_recording: bool, volume: f32) {
-        async_play_note(&self.notes, bpm, is_recording, volume);
+    fn play(&self, handle: OutputStreamHandle, bpm: f32, is_recording: bool, volume: f32) {
+        async_play_note(handle, &self.notes, bpm, is_recording, volume);
     }
 }

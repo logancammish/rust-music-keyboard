@@ -12,9 +12,9 @@ use note::{*};
 // use dependencies     
 use iced::{keyboard::{self}, Element, Size, Subscription, Theme};
 use once_cell::sync::Lazy;
-use rodio::{self, OutputStream, OutputStreamHandle, Sink, Source};
+use rodio::{self, OutputStream, OutputStreamHandle};
 use std::{fs, io::Read};
-use std::{thread, collections::HashMap, fs::File,  sync::{Arc, Mutex}, time::Duration};
+use std::{collections::HashMap, fs::File,  sync::{Arc, Mutex}};
 use iced::futures::{self, Stream};
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -22,19 +22,10 @@ use futures::stream::StreamExt;
 use iced_native::subscription::Recipe;
 use serde_json;
 
-#[derive(Clone)]
-struct SoundRequest {
-    frequency: u32,
-    duration: f32,
-    volume: f32,
-    real_note: RealNote,
-    bpm: f32
-}
-
 // playable trait to implement polymorphism
 // for structs RealNote and Chordf
 trait Playable {
-    fn play(&self, bpm: f32, is_recording: bool, volume: f32);
+    fn play(&self, handle: OutputStreamHandle, bpm: f32, is_recording: bool, volume: f32);
 }
 
 // Mutually exclusive, thread-safe static variables for storing important 
@@ -67,13 +58,13 @@ impl Default for Song {
     }
 }
 
-pub fn async_play_note(notes: &[RealNote], bpm: f32, is_recording: bool, volume: f32) {
+pub fn async_play_note(handle: OutputStreamHandle, notes: &[RealNote], bpm: f32, is_recording: bool, volume: f32) {
     for note in notes {
         let note = note.clone();
-        //THREAD_POOL.lock().unwrap().execute(move || note.play_sound(bpm, is_recording, sink));
+        let handle = handle.clone();
 
         THREAD_POOL.lock().unwrap().spawn(move || {
-            note.play(bpm, is_recording, volume);
+            note.play(handle, bpm, is_recording, volume);
         });
         // thread::spawn(move || {
         //     note.play(bpm, is_recording, volume);
@@ -138,8 +129,9 @@ struct Program {
     note_length: f32,
     volume: f32,
     buttons_pressed: HashMap<Note, bool>,
-    sound_channel: Arc<Mutex<(std::sync::mpsc::Sender<SoundRequest>, std::sync::mpsc::Receiver<SoundRequest>)>>,
-    current_menu: CurrentMenu
+    current_menu: CurrentMenu,
+    output_stream: Arc<Mutex<OutputStream>>,
+    output_stream_handle: Arc<Mutex<OutputStreamHandle>>,
 }
 
 // implement the Program struct
@@ -249,22 +241,6 @@ impl Program {
                 } else {
                     self.time_elapsed = 0.0;
                 }
-
-                // if let Ok(sound_request) = self.sound_channel.lock().unwrap().1.try_recv() {
-                //     let real_note = sound_request.real_note;
-                //     let time = NoteLength::duration_in_seconds(&real_note.length, sound_request.bpm);
-                //     let frequency = RealNote::base_frequencies(real_note.note.clone()) * 2_f32.powf(self.octave);
-                //     let source = rodio::source::SineWave::new(frequency)
-                //         .amplify(0.1)
-                //         .take_duration(Duration::from_secs_f32(time));
-                //     let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
-                //     let sink = Sink::try_new(&handle).expect("Failed to create sink");
-
-                //     sink.append(source);
-                //     sink.play(); 
-                //     sink.set_volume(sound_request.volume / 10.0);
-                //     sink.sleep_until_end();                    
-                // }
             }
 
             Message::Scale(note) => {
@@ -346,13 +322,15 @@ impl Program {
                     octave: self.octave,
                 };
 
+                let handle = self.output_stream_handle.lock().unwrap().clone();
+
                 if self.play_chords == false && self.play_async == false {  
-                    real_note.play(self.bpm, self.is_recording, self.volume);
+                    real_note.play(handle, self.bpm, self.is_recording, self.volume);
                 } else if self.play_chords == true { 
                     let chord = Chord::triad_from_note(&real_note);
-                    chord.play(self.bpm, self.is_recording, self.volume);
+                    chord.play(handle, self.bpm, self.is_recording, self.volume);
                 } else if self.play_async == true {               
-                    real_note.play_async(self.bpm, self.is_recording, self.volume);
+                    real_note.play_async(handle, self.bpm, self.is_recording, self.volume);
                 }
             }
         }
@@ -429,6 +407,9 @@ impl Default for Program {
             CurrentMenu::Standard
         };
 
+        let (stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
+
+
         Self {
             note_length: 2.0, 
             selected_scale: None,  
@@ -441,10 +422,9 @@ impl Default for Program {
             time_elapsed: 0.0,
             volume: 30.0,
             buttons_pressed: buttons_pressed,
-            sound_channel: Arc::new(Mutex::new(
-                std::sync::mpsc::channel::<SoundRequest>()
-            )),
-            current_menu: current_menu
+            current_menu: current_menu,
+            output_stream_handle: Arc::new(Mutex::new(handle)),
+            output_stream: Arc::new(Mutex::new(stream))
         }
     }
 }

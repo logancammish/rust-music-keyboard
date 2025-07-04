@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use strum_macros::Display;
-use rodio::{self, OutputStream, Sink, Source};
-use crate::{Program, Playable, async_play_note, record_history};
+use rodio::{self, OutputStreamHandle, Sink, Source};
+use crate::{Playable, async_play_note, record_history};
 
 
 // Note enum defines all notes in Western music
@@ -88,13 +88,12 @@ impl RealNote {
         }
     }
 
-    fn play_sound(&self, bpm: f32, is_recording: bool, volume: f32) {  
+    fn play_sound(&self, handle: OutputStreamHandle,  bpm: f32, is_recording: bool, volume: f32) {  
         let time = NoteLength::duration_in_seconds(&self.length, bpm);
         let frequency = Self::base_frequencies(self.note.clone()) * 2_f32.powf(self.octave);
         let source = rodio::source::SineWave::new(frequency)
             .amplify(0.1)
             .take_duration(Duration::from_secs_f32(time));
-        let (_stream, handle) = OutputStream::try_default().expect("Failed to create output stream");
         let sink = Sink::try_new(&handle).expect("Failed to create sink");
 
         if is_recording {
@@ -106,15 +105,15 @@ impl RealNote {
         sink.sleep_until_end();
     }
 
-    pub fn play_async(&self, bpm: f32, is_recording: bool, volume: f32) { 
+    pub fn play_async(&self, handle: OutputStreamHandle, bpm: f32, is_recording: bool, volume: f32) { 
         let notes = vec![self.clone()];
-        async_play_note(&notes, bpm, is_recording, volume);
+        async_play_note(handle, &notes, bpm, is_recording, volume);
     }
 }
 
 // implement Playable trait for RealNote 
 impl Playable for RealNote { 
-    fn play(&self, bpm: f32, is_recording: bool, volume: f32) {
-        self.play_sound(bpm, is_recording, volume);
+    fn play(&self, handle: OutputStreamHandle, bpm: f32, is_recording: bool, volume: f32) {
+        self.play_sound(handle, bpm, is_recording, volume);
     }
 }
