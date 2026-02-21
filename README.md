@@ -1,6 +1,12 @@
 # rust-music-keyboard
 
 [![build](https://github.com/logancammish/rust-music-keyboard/actions/workflows/rust.yml/badge.svg)](https://github.com/logancammish/rust-music-keyboard/actions/workflows/rust.yml)
+## NOTE: 
+***This project was awarded NZQA Scholarship in Technology, and is now complete***
+
+ **No further updates will be published.**
+
+---
 
 This is a simple GUI musical keyboard application made in Rust with MIDI export functionality. 
 
